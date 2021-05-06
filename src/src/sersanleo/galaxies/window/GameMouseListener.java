@@ -13,7 +13,8 @@ import src.sersanleo.galaxies.util.Vector2i;
 import src.sersanleo.galaxies.window.painter.BoardPainter;
 
 public class GameMouseListener implements MouseListener, MouseMotionListener {
-	private static final float A = 0.2f;
+	// Umbral para marcar una arista cuando se arrastra el cursor
+	private static final float DRAG_THRESHOLD = 0.25f;
 
 	private final Game game;
 	private final BoardPanel panel;
@@ -27,10 +28,12 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 	}
 
 	private final void switchEdge(int mouseX, int mouseY, boolean softDetection) {
-		float x = mouseX - BoardPainter.SELECTED_EDGE_WIDTH_ADD;
-		float y = mouseY - BoardPainter.SELECTED_EDGE_WIDTH_ADD - BoardPainter.FULL_CELL_SIZE / 2f;
+		BoardPainter painter = panel.painter;
 
-		float hipotenusa = (float) Math.sqrt(2 * Math.pow(BoardPainter.FULL_CELL_SIZE, 2)) / 2;
+		float x = mouseX - painter.selectedEdgeWidth / 2;
+		float y = mouseY - painter.selectedEdgeWidth / 2 - painter.fullCellSize / 2f;
+
+		float hipotenusa = (float) Math.sqrt(2 * Math.pow(painter.fullCellSize, 2)) / 2;
 		// Se rota, se normaliza y se redondea
 		Vector2f trans = new Vector2f(x, y).rotate(Math.PI / 4).scale(1 / hipotenusa);
 		Vector2i rotated = trans.round();
@@ -46,13 +49,13 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 					offset -= Math.floor(offset);
 					if (offset > 0.5f)
 						offset = 1 - offset;
-					if (offset < A)
+					if (offset < DRAG_THRESHOLD)
 						return;
 				}
 
 				Vector2i edge = new Vector2i(cx, cy);
 				if (!verticalEdges.contains(edge)) {
-					game.switchVerticalEdge(cx, cy);
+					game.solution.switchVerticalEdge(cx, cy);
 					panel.repaint();
 					verticalEdges.add(edge);
 				}
@@ -67,13 +70,13 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 					offset -= Math.floor(offset);
 					if (offset > 0.5f)
 						offset = 1 - offset;
-					if (offset < A)
+					if (offset < DRAG_THRESHOLD)
 						return;
 				}
 
 				Vector2i edge = new Vector2i(cx, cy);
 				if (!horizontalEdges.contains(edge)) {
-					game.switchHorizontalEdge(cx, cy);
+					game.solution.switchHorizontalEdge(cx, cy);
 					panel.repaint();
 					horizontalEdges.add(edge);
 				}
@@ -89,9 +92,8 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0) {
+		if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
 			switchEdge(e.getX(), e.getY(), true);
-		}
 	}
 
 	@Override

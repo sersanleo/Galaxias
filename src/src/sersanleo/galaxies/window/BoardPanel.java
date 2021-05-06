@@ -13,7 +13,7 @@ import src.sersanleo.galaxies.window.painter.GamePainter;
 public class BoardPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 
-	private final BoardPainter painter;
+	public final BoardPainter painter;
 
 	private BoardPanel(BoardPainter painter) {
 		this.painter = painter;
@@ -22,18 +22,26 @@ public class BoardPanel extends JPanel {
 		setPreferredSize(new Dimension(painter.width, painter.height));
 	}
 
-	public BoardPanel(Board board) {
-		this(new BoardPainter(board));
+	public BoardPanel(Board board, float scale) {
+		this(new BoardPainter(board, scale));
 
 		addMouseListener(new BoardMouseListener(board, this));
 	}
 
-	public BoardPanel(Game game) {
-		this(new GamePainter(game));
+	public BoardPanel(Board board) {
+		this(board, 1);
+	}
+
+	public BoardPanel(Game game, float scale) {
+		this(new GamePainter(game, scale));
 
 		GameMouseListener mouseListener = new GameMouseListener(game, this);
 		addMouseListener(mouseListener);
 		addMouseMotionListener(mouseListener);
+	}
+
+	public BoardPanel(Game game) {
+		this(game, 1);
 	}
 
 	@Override

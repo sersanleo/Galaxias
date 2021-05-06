@@ -34,13 +34,13 @@ public class BoardMouseListener implements MouseListener {
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			int cellSize = BoardPainter.EDGE_WIDTH + BoardPainter.CELL_SIZE;
+			BoardPainter painter = panel.painter;
 
-			float x = e.getX() - BoardPainter.SELECTED_EDGE_WIDTH_ADD;
-			float y = e.getY() - BoardPainter.SELECTED_EDGE_WIDTH_ADD;
+			float x = e.getX() - painter.selectedEdgeWidth / 2;
+			float y = e.getY() - painter.selectedEdgeWidth / 2;
 
-			x = (float) (Math.floor((x - 0.25 * cellSize) / (0.5 * cellSize)) * 0.5f);
-			y = (float) (Math.floor((y - 0.25 * cellSize) / (0.5 * cellSize)) * 0.5f);
+			x = (float) (Math.floor((x - 0.25f * painter.fullCellSize) / (0.5f * painter.fullCellSize)) * 0.5f);
+			y = (float) (Math.floor((y - 0.25f * painter.fullCellSize) / (0.5f * painter.fullCellSize)) * 0.5f);
 
 			try {
 				Galaxy galaxy = new Galaxy(x, y);

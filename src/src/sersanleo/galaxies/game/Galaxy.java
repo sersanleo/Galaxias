@@ -18,7 +18,6 @@ public class Galaxy extends Vector2f {
 		super(x, y);
 
 		this.smallBB = BoundingBoxf.fromPointAndRadius(x, y, SMALL_RADIUS);
-
 		float width = 2 * ((Math.round(2 * x) % 2 == 0) ? SMALL_RADIUS : BIG_RADIUS);
 		float height = 2 * ((Math.round(2 * y) % 2 == 0) ? SMALL_RADIUS : BIG_RADIUS);
 		this.bigBB = BoundingBoxf.fromCenteredPointAndDimensions(x, y, width, height);

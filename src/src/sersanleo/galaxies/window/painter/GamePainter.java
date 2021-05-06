@@ -1,6 +1,8 @@
-package src.sersanleo.galaxies.game;
+package src.sersanleo.galaxies.window.painter;
 
 import java.awt.Color;
+
+import src.sersanleo.galaxies.game.Game;
 
 public class GamePainter extends BoardPainter {
 	private final Game game;

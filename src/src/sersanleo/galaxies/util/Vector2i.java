@@ -1,5 +1,7 @@
 package src.sersanleo.galaxies.util;
 
+import java.util.Collection;
+
 public class Vector2i {
 	public int x;
 	public int y;
@@ -7,6 +9,18 @@ public class Vector2i {
 	public Vector2i(int x, int y) {
 		this.x = x;
 		this.y = y;
+	}
+
+	public final static Vector2f mean(Collection<Vector2i> vectors) {
+		float x = 0;
+		float y = 0;
+
+		for (Vector2i vector : vectors) {
+			x += vector.x;
+			y += vector.y;
+		}
+
+		return new Vector2f(x / vectors.size(), y / vectors.size());
 	}
 
 	@Override

@@ -26,6 +26,16 @@ public class Vector2f {
 		return symmetric(v.x, v.y);
 	}
 
+	public Vector2f rotate(double rad) {
+		float cos = (float) Math.cos(rad);
+		float sin = (float) Math.sin(rad);
+		return new Vector2f(x * cos - y * sin, x * sin + y * cos);
+	}
+
+	public Vector2f scale(float scale) {
+		return new Vector2f(x * scale, y * scale);
+	}
+
 	public Vector2i round() {
 		return new Vector2i(Math.round(x), Math.round(y));
 	}

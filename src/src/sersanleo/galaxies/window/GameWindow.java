@@ -16,8 +16,10 @@ import javax.swing.UIManager;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
+import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
+import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 
-public class GalaxiesWindow extends JFrame implements ActionListener {
+public class GameWindow extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	// Menú
@@ -33,9 +35,10 @@ public class GalaxiesWindow extends JFrame implements ActionListener {
 	private final JMenuItem undoMenuItem = new JMenuItem("Deshacer");
 	private final JMenuItem redoMenuItem = new JMenuItem("Rehacer");
 
-	private final BoardPanel boardPanel;
+	private BoardPanel boardPanel;
+	private Board board;
 
-	public GalaxiesWindow() {
+	public GameWindow() throws BoardTooSmallException, CanNotAddGalaxyException {
 		// Configuración del JFrame
 		super("Galaxias");
 
@@ -51,7 +54,8 @@ public class GalaxiesWindow extends JFrame implements ActionListener {
 
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
-		boardPanel = new BoardPanel(new Game(new Board(8, 15)));
+		board = new Board(7, 7);
+		boardPanel = new BoardPanel(board);
 		boardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(boardPanel);
 
@@ -110,7 +114,9 @@ public class GalaxiesWindow extends JFrame implements ActionListener {
 		Object eventSource = event.getSource();
 
 		if (eventSource == newGameMenuItem) {
-
+			remove(boardPanel);
+			boardPanel = new BoardPanel(new Game(board));
+			add(boardPanel);
 		} else if (eventSource == createBoardMenuItem) {
 
 		} else if (eventSource == saveProgressMenuItem) {

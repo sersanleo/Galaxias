@@ -6,9 +6,9 @@ import java.awt.Graphics;
 import javax.swing.JPanel;
 
 import src.sersanleo.galaxies.game.Board;
-import src.sersanleo.galaxies.game.BoardPainter;
 import src.sersanleo.galaxies.game.Game;
-import src.sersanleo.galaxies.game.GamePainter;
+import src.sersanleo.galaxies.window.painter.BoardPainter;
+import src.sersanleo.galaxies.window.painter.GamePainter;
 
 public class BoardPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
@@ -24,10 +24,16 @@ public class BoardPanel extends JPanel {
 
 	public BoardPanel(Board board) {
 		this(new BoardPainter(board));
+
+		addMouseListener(new BoardMouseListener(board, this));
 	}
 
 	public BoardPanel(Game game) {
 		this(new GamePainter(game));
+
+		GameMouseListener mouseListener = new GameMouseListener(game, this);
+		addMouseListener(mouseListener);
+		addMouseMotionListener(mouseListener);
 	}
 
 	@Override

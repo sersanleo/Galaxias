@@ -6,8 +6,8 @@ import java.util.Set;
 
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
+import src.sersanleo.galaxies.game.rendering.BoardRenderer;
 import src.sersanleo.galaxies.util.BoundingBoxi;
-import src.sersanleo.galaxies.window.painter.BoardPainter;
 
 public class Board extends BoundingBoxi {
 	public final static int MIN_SIZE = 2;
@@ -26,10 +26,6 @@ public class Board extends BoundingBoxi {
 		this.width = width;
 		this.height = height;
 		this.area = width * height;
-	}
-
-	protected BoardPainter createBoardPainter() {
-		return new BoardPainter(this);
 	}
 
 	public void addGalaxy(Galaxy galaxy) throws CanNotAddGalaxyException {

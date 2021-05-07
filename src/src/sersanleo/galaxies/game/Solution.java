@@ -1,17 +1,19 @@
 package src.sersanleo.galaxies.game;
 
+import java.awt.Color;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import src.sersanleo.galaxies.util.Vector2i;
 
-public class Solution {
+public final class Solution {
 	private final Board board;
 
 	private final boolean[][] horizontalEdges;
 	private final boolean[][] verticalEdges;
-	private boolean[][] solvedCells;
+
+	private CellState[][] cells;
 
 	private boolean solved = false;
 
@@ -20,9 +22,17 @@ public class Solution {
 
 		this.horizontalEdges = new boolean[board.width][board.height - 1];
 		this.verticalEdges = new boolean[board.width - 1][board.height];
-		this.solvedCells = new boolean[board.width][board.height];
+
+		this.cells = new CellState[board.width][board.height];
+		resetCells();
 
 		updateSolvedCells();
+	}
+
+	private final void resetCells() {
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++)
+				cells[x][y] = CellState.NON_SOLVED;
 	}
 
 	private final Set<Vector2i> getNeighbors(int x, int y) {
@@ -66,36 +76,46 @@ public class Solution {
 		return horizontalEdges[x][y];
 	}
 
-	public final boolean solved() {
+	public final boolean isSolved() {
 		return solved;
 	}
 
-	public final boolean solved(int x, int y) {
-		return solvedCells[x][y];
+	public final CellState cell(int x, int y) {
+		return cells[x][y];
 	}
 
 	public final void switchHorizontalEdge(int x, int y) {
 		// Se activará/desactivará la arista correspondiente si no hay una galaxia sobre
 		// ella
-		Galaxy checker = new Galaxy(x, y + 0.5f);
-		if (!board.getGalaxies().contains(checker)) {
-			horizontalEdges[x][y] = !horizontalEdges[x][y];
-			updateSolvedCells();
-		}
+		Set<Galaxy> galaxiesToCheck = new HashSet<Galaxy>();
+		galaxiesToCheck.add(new Galaxy(x - 0.5f, y + 0.5f));
+		galaxiesToCheck.add(new Galaxy(x, y + 0.5f));
+		galaxiesToCheck.add(new Galaxy(x + 0.5f, y + 0.5f));
+		for (Galaxy galaxyToCheck : galaxiesToCheck)
+			if (board.getGalaxies().contains(galaxyToCheck))
+				return;
+
+		horizontalEdges[x][y] = !horizontalEdges[x][y];
+		updateSolvedCells();
 	}
 
 	public final void switchVerticalEdge(int x, int y) {
 		// Se activará/desactivará la arista correspondiente si no hay una galaxia sobre
 		// ella
-		Galaxy checker = new Galaxy(x + 0.5f, y);
-		if (!board.getGalaxies().contains(checker)) {
-			verticalEdges[x][y] = !verticalEdges[x][y];
-			updateSolvedCells();
-		}
+		Set<Galaxy> galaxiesToCheck = new HashSet<Galaxy>();
+		galaxiesToCheck.add(new Galaxy(x + 0.5f, y + 0.5f));
+		galaxiesToCheck.add(new Galaxy(x + 0.5f, y));
+		galaxiesToCheck.add(new Galaxy(x + 0.5f, y - 0.5f));
+		for (Galaxy galaxyToCheck : galaxiesToCheck)
+			if (board.getGalaxies().contains(galaxyToCheck))
+				return;
+
+		verticalEdges[x][y] = !verticalEdges[x][y];
+		updateSolvedCells();
 	}
 
 	public final void updateSolvedCells() {
-		solvedCells = new boolean[board.width][board.height];
+		resetCells();
 
 		int solvedCells = 0;
 		Set<Galaxy> galaxies = board.getGalaxies();
@@ -124,35 +144,34 @@ public class Solution {
 			}
 
 			// Se realizan comprobaciones sobre el área obtenida
-			boolean solved = true;
+			CellState state = CellState.SOLVED;
 			for (Vector2i cell : galaxyCells) {
 				// Simetría
 				if (!galaxyCells.contains(galaxy.symmetric(cell).round())) {
-					solved = false;
+					state = CellState.NON_SOLVED;
 					break;
 				}
 
 				// Unicidad de galaxia
 				for (Galaxy galaxy2 : galaxies)
 					if (galaxy2 != galaxy && galaxy2.smallBB.overlaps(cell)) {
-						solved = false;
+						state = CellState.NON_SOLVED;
 						break;
 					}
-				if (!solved)
+				if (state == CellState.NON_SOLVED)
 					break;
 
 				// Comprobar que no haya aristas entre casillas de la galaxia
-				if (getNeighbors(cell).size() != getNeighborsInSet(cell, galaxyCells).size()) {
-					solved = false;
-					break;
-				}
+				if (getNeighbors(cell).size() != getNeighborsInSet(cell, galaxyCells).size())
+					state = CellState.SOLVED_PARTIALLY;
 			}
 
-			if (solved) {
-				solvedCells += galaxyCells.size();
+			if (state != CellState.NON_SOLVED) {
+				if (state == CellState.SOLVED)
+					solvedCells += galaxyCells.size();
 
 				for (Vector2i cell : galaxyCells)
-					this.solvedCells[cell.x][cell.y] = solved;
+					this.cells[cell.x][cell.y] = state;
 			}
 		}
 
@@ -163,5 +182,15 @@ public class Solution {
 
 	public final boolean verticalEdge(int x, int y) {
 		return verticalEdges[x][y];
+	}
+
+	public static enum CellState {
+		NON_SOLVED(Color.WHITE), SOLVED(Color.LIGHT_GRAY), SOLVED_PARTIALLY(new Color(207, 175, 175));
+
+		public final Color color;
+
+		CellState(Color color) {
+			this.color = color;
+		}
 	}
 }

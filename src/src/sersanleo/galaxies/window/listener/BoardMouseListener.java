@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window;
+package src.sersanleo.galaxies.window.listener;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -8,7 +8,8 @@ import javax.swing.JOptionPane;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.window.painter.BoardPainter;
+import src.sersanleo.galaxies.game.rendering.BoardRenderer;
+import src.sersanleo.galaxies.window.BoardPanel;
 
 public class BoardMouseListener implements MouseListener {
 	private final Board board;
@@ -34,13 +35,13 @@ public class BoardMouseListener implements MouseListener {
 	@Override
 	public void mousePressed(MouseEvent e) {
 		if (e.getButton() == MouseEvent.BUTTON1) {
-			BoardPainter painter = panel.painter;
+			BoardRenderer renderer = panel.renderer;
 
-			float x = e.getX() - painter.selectedEdgeWidth / 2;
-			float y = e.getY() - painter.selectedEdgeWidth / 2;
+			float x = e.getX() - renderer.getSelectedEdgeWidth() / 2;
+			float y = e.getY() - renderer.getSelectedEdgeWidth() / 2;
 
-			x = (float) (Math.floor((x - 0.25f * painter.fullCellSize) / (0.5f * painter.fullCellSize)) * 0.5f);
-			y = (float) (Math.floor((y - 0.25f * painter.fullCellSize) / (0.5f * painter.fullCellSize)) * 0.5f);
+			x = (float) (Math.floor((x - 0.25f * renderer.getFullCellSize()) / (0.5f * renderer.getFullCellSize())) * 0.5f);
+			y = (float) (Math.floor((y - 0.25f * renderer.getFullCellSize()) / (0.5f * renderer.getFullCellSize())) * 0.5f);
 
 			try {
 				Galaxy galaxy = new Galaxy(x, y);

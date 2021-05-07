@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window;
+package src.sersanleo.galaxies.window.listener;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -8,9 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.Game;
-import src.sersanleo.galaxies.util.Vector2f;
+import src.sersanleo.galaxies.game.rendering.BoardRenderer;
 import src.sersanleo.galaxies.util.Vector2i;
-import src.sersanleo.galaxies.window.painter.BoardPainter;
+import src.sersanleo.galaxies.window.BoardPanel;
 
 public class GameMouseListener implements MouseListener, MouseMotionListener {
 	// Umbral para marcar una arista cuando se arrastra el cursor
@@ -28,70 +28,68 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 	}
 
 	private final void switchEdge(int mouseX, int mouseY, boolean softDetection) {
-		BoardPainter painter = panel.painter;
+		BoardRenderer renderer = panel.renderer;
 
-		float x = mouseX - painter.selectedEdgeWidth / 2;
-		float y = mouseY - painter.selectedEdgeWidth / 2 - painter.fullCellSize / 2f;
+		float x = (mouseX - renderer.getSelectedEdgeWidth() / 2) / renderer.getFullCellSize();
+		float y = (mouseY - renderer.getSelectedEdgeWidth() / 2) / renderer.getFullCellSize();
+		int cellX = (int) Math.floor(x);
+		int cellY = (int) Math.floor(y);
+		float offsetX = x - cellX;
+		float offsetY = y - cellY;
 
-		float hipotenusa = (float) Math.sqrt(2 * Math.pow(painter.fullCellSize, 2)) / 2;
-		// Se rota, se normaliza y se redondea
-		Vector2f trans = new Vector2f(x, y).rotate(Math.PI / 4).scale(1 / hipotenusa);
-		Vector2i rotated = trans.round();
+		int subtriangle = (offsetX > offsetY ? 0 : 1) * 2 + (1 - offsetX > offsetY ? 0 : 1);
+		if (subtriangle == 0 || subtriangle == 3) { // Arista horizontal
+			int edgeX = cellX;
+			int edgeY = cellY - (subtriangle == 0 ? 1 : 0);
 
-		boolean vertical = Math.abs(rotated.x + rotated.y) % 2 == 0;
-		if (vertical) {
-			int cy = (rotated.y - rotated.x) / 2;
-			int cx = rotated.x + cy - 1;
-
-			if (cx >= 0 && cx < game.board.width - 1 && cy >= 0 && cy < game.board.height) {
+			if (edgeX >= 0 && edgeX < game.board.width && edgeY >= 0 && edgeY < game.board.height - 1) {
 				if (softDetection) {
-					float offset = Math.abs(0.5f + (trans.y - trans.x) / 2);
-					offset -= Math.floor(offset);
-					if (offset > 0.5f)
-						offset = 1 - offset;
-					if (offset < DRAG_THRESHOLD)
+					float threshold = Math.min(offsetX, 1 - offsetX);
+					if (threshold < DRAG_THRESHOLD)
 						return;
 				}
 
-				Vector2i edge = new Vector2i(cx, cy);
-				if (!verticalEdges.contains(edge)) {
-					game.solution.switchVerticalEdge(cx, cy);
+				Vector2i edge = new Vector2i(edgeX, edgeY);
+				if (!horizontalEdges.contains(edge)) {
+					game.solution.switchHorizontalEdge(edgeX, edgeY);
+					horizontalEdges.add(edge);
 					panel.repaint();
-					verticalEdges.add(edge);
 				}
 			}
-		} else {
-			int cy = (rotated.y - rotated.x - 1) / 2;
-			int cx = rotated.x + cy;
+		} else { // Arista vertical
+			int edgeX = cellX - (subtriangle == 2 ? 1 : 0);
+			int edgeY = cellY;
 
-			if (cx >= 0 && cx < game.board.width && cy >= 0 && cy < game.board.height - 1) {
+			if (edgeX >= 0 && edgeX < game.board.width - 1 && edgeY >= 0 && edgeY < game.board.height) {
 				if (softDetection) {
-					float offset = Math.abs(0.5f + trans.x + cy);
-					offset -= Math.floor(offset);
-					if (offset > 0.5f)
-						offset = 1 - offset;
-					if (offset < DRAG_THRESHOLD)
+					float threshold = Math.min(offsetY, 1 - offsetY);
+					if (threshold < DRAG_THRESHOLD)
 						return;
 				}
 
-				Vector2i edge = new Vector2i(cx, cy);
-				if (!horizontalEdges.contains(edge)) {
-					game.solution.switchHorizontalEdge(cx, cy);
+				Vector2i edge = new Vector2i(edgeX, edgeY);
+				if (!verticalEdges.contains(edge)) {
+					game.solution.switchVerticalEdge(edgeX, edgeY);
+					verticalEdges.add(edge);
 					panel.repaint();
-					horizontalEdges.add(edge);
 				}
 			}
 		}
+
 	}
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		if (game.solution.isSolved())
+			return;
 		if (e.getButton() == MouseEvent.BUTTON1)
 			switchEdge(e.getX(), e.getY(), false);
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		if (game.solution.isSolved())
+			return;
 		if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
 			switchEdge(e.getX(), e.getY(), true);
 	}

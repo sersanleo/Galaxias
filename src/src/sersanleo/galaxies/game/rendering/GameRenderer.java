@@ -1,19 +1,19 @@
-package src.sersanleo.galaxies.window.painter;
+package src.sersanleo.galaxies.game.rendering;
 
 import java.awt.Color;
 
 import src.sersanleo.galaxies.game.Game;
 
-public class GamePainter extends BoardPainter {
+public class GameRenderer extends BoardRenderer {
 	private final Game game;
 
-	public GamePainter(Game game, float scale) {
+	public GameRenderer(Game game, float scale) {
 		super(game.board, scale);
 
 		this.game = game;
 	}
 
-	public GamePainter(Game game) {
+	public GameRenderer(Game game) {
 		this(game, 1);
 	}
 
@@ -29,9 +29,6 @@ public class GamePainter extends BoardPainter {
 
 	@Override
 	protected Color getCellColor(int x, int y) {
-		if (game.solution.solved(x, y))
-			return Color.LIGHT_GRAY;
-		else
-			return Color.WHITE;
+		return game.solution.cell(x, y).color;
 	}
 }

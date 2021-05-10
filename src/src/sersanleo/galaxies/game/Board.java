@@ -1,15 +1,19 @@
 package src.sersanleo.galaxies.game;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.game.rendering.BoardRenderer;
 import src.sersanleo.galaxies.util.BoundingBoxi;
+import src.sersanleo.galaxies.util.ExtFileInputStream;
+import src.sersanleo.galaxies.util.ExtFileOutputStream;
 
 public class Board extends BoundingBoxi {
+	public final static String FILE_EXT = "tsb";
 	public final static int MIN_SIZE = 2;
 
 	public final int width;
@@ -28,7 +32,7 @@ public class Board extends BoundingBoxi {
 		this.area = width * height;
 	}
 
-	public void addGalaxy(Galaxy galaxy) throws CanNotAddGalaxyException {
+	public final void addGalaxy(Galaxy galaxy) throws CanNotAddGalaxyException {
 		if (overlaps(galaxy)) {
 			for (Galaxy g : galaxies)
 				if (g.bigBB.overlaps(galaxy))
@@ -40,15 +44,46 @@ public class Board extends BoundingBoxi {
 		galaxies.add(galaxy);
 	}
 
-	public void addGalaxy(float x, float y) throws CanNotAddGalaxyException {
+	public final void addGalaxy(float x, float y) throws CanNotAddGalaxyException {
 		addGalaxy(new Galaxy(x, y));
 	}
 
-	public boolean removeGalaxy(Galaxy galaxy) {
+	public final boolean removeGalaxy(Galaxy galaxy) {
 		return galaxies.remove(galaxy);
 	}
 
-	public Set<Galaxy> getGalaxies() {
+	public final Set<Galaxy> getGalaxies() {
 		return Collections.unmodifiableSet(galaxies);
+	}
+
+	public final void save(File file) throws IOException {
+		ExtFileOutputStream stream = new ExtFileOutputStream(file);
+
+		stream.writeInt(width);
+		stream.writeInt(height);
+		stream.writeInt(galaxies.size());
+
+		for (Galaxy galaxy : galaxies) {
+			stream.writeFloat(galaxy.x);
+			stream.writeFloat(galaxy.y);
+		}
+
+		stream.flush();
+		stream.close();
+	}
+
+	public final static Board createFromStream(ExtFileInputStream stream) throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
+		Board board = new Board(stream.readInt(), stream.readInt());
+		int galaxiesLeft = stream.readInt();
+		while (galaxiesLeft-- > 0)
+			board.addGalaxy(stream.readFloat(), stream.readFloat());
+		return board;
+	}
+
+	public final static Board createFromFile(File file) throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+		ExtFileInputStream stream = new ExtFileInputStream(file);
+		Board board = createFromStream(stream);
+		stream.close();
+		return board;
 	}
 }

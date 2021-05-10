@@ -1,13 +1,15 @@
 package src.sersanleo.galaxies.window;
 
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -19,13 +21,12 @@ import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.window.listener.BoardMouseListener;
-import src.sersanleo.galaxies.window.listener.GameMouseListener;
 
 public class GameWindow extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
@@ -41,16 +42,17 @@ public class GameWindow extends JFrame implements ActionListener {
 	private final JMenuItem newGameMenuItem = new JMenuItem("Nuevo");
 	private final JMenuItem createBoardMenuItem = new JMenuItem("Crear tablero");
 	private final JMenuItem saveProgressMenuItem = new JMenuItem("Guardar partida");
-	private final JMenuItem saveBoardMenuItem = new JMenuItem("Guardar tablero");
+	private final JMenuItem openBoardMenuItem = new JMenuItem("Abrir tablero");
 
 	private final JMenu editMenu = new JMenu("Editar");
 	private final JMenuItem undoMenuItem = new JMenuItem("Deshacer");
 	private final JMenuItem redoMenuItem = new JMenuItem("Rehacer");
 
-	public BoardPanel boardPanel;
-	private Board board;
+	// Contenido
+	private JPanel content;
+	private JPanel nextContent;
 
-	public GameWindow() throws BoardTooSmallException, CanNotAddGalaxyException {
+	public GameWindow() throws BoardTooSmallException, CanNotAddGalaxyException, IOException {
 		// Configuración del JFrame
 		super("Galaxias");
 
@@ -65,12 +67,6 @@ public class GameWindow extends JFrame implements ActionListener {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-
-		board = new Board(7, 7);
-		boardPanel = new BoardPanel(board);
-		boardPanel.addMouseListener(new BoardMouseListener(board, boardPanel));
-		boardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		add(boardPanel);
 
 		// Menú
 		menuBar = new JMenuBar();
@@ -91,9 +87,8 @@ public class GameWindow extends JFrame implements ActionListener {
 		saveProgressMenuItem.addActionListener(this);
 		gameMenu.add(saveProgressMenuItem);
 
-		saveBoardMenuItem.setEnabled(false);
-		saveBoardMenuItem.addActionListener(this);
-		gameMenu.add(saveBoardMenuItem);
+		openBoardMenuItem.addActionListener(this);
+		gameMenu.add(openBoardMenuItem);
 
 		// Editar
 		editMenu.setEnabled(false);
@@ -108,7 +103,6 @@ public class GameWindow extends JFrame implements ActionListener {
 		editMenu.add(redoMenuItem);
 
 		setVisible(true);
-		setSize(500, 500);
 		pack();
 	}
 
@@ -122,10 +116,18 @@ public class GameWindow extends JFrame implements ActionListener {
 		super.setSize(width + horizontalInsets, height + verticalInsets);
 	}
 
+	private final void setContent(JPanel content) {
+		if (this.content != null)
+			remove(this.content);
+		this.content = content;
+		add(content);
+		pack();
+	}
+
 	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(5, 2, 14, 1);
 	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(5, 2, 14, 1);
 
-	public final void showCreateNewBoardDialog() throws BoardTooSmallException {
+	public final void createNewBoard() throws BoardTooSmallException {
 		JSpinner widthSpinner = new JSpinner(widthSpinnerModel);
 		JSpinner heightSpinner = new JSpinner(heightSpinnerModel);
 
@@ -136,15 +138,26 @@ public class GameWindow extends JFrame implements ActionListener {
 				JOptionPane.PLAIN_MESSAGE);
 
 		if (result == JOptionPane.OK_OPTION) {
-			remove(boardPanel);
+			BoardCreatorPanel panel = new BoardCreatorPanel(
+					new Board((int) widthSpinner.getValue(), (int) heightSpinner.getValue()));
+			setContent(panel);
+		}
+	}
+	
+	private final void openBoard() throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+		JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setDialogTitle("Abrir tablero");
+		FileNameExtensionFilter tsb = new FileNameExtensionFilter("Tablero de galaxias (." + Board.FILE_EXT + ")",
+				Board.FILE_EXT);
+		fileChooser.addChoosableFileFilter(tsb);
+		fileChooser.setFileFilter(tsb);
 
-			board = new Board((int) widthSpinner.getValue(), (int) heightSpinner.getValue());
-			boardPanel = new BoardPanel(board);
-			boardPanel.addMouseListener(new BoardMouseListener(board, boardPanel));
-			boardPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		int userSelection = fileChooser.showOpenDialog(this);
 
-			add(boardPanel);
-			pack();
+		if (userSelection == JFileChooser.APPROVE_OPTION) {
+			File file = fileChooser.getSelectedFile();
+			
+			setContent(new GamePanel(new Game(Board.createFromFile(file))));
 		}
 	}
 
@@ -153,25 +166,20 @@ public class GameWindow extends JFrame implements ActionListener {
 		Object eventSource = event.getSource();
 
 		if (eventSource == newGameMenuItem) {
-			remove(boardPanel);
 
-			Game game = new Game(board);
-			BoardPanel newPanel = new BoardPanel(game);
-			newPanel.fitToSize(boardPanel.getWidth(), boardPanel.getHeight());
-			boardPanel = newPanel;
-			GameMouseListener mouseListener = new GameMouseListener(game, boardPanel);
-			boardPanel.addMouseListener(mouseListener);
-			boardPanel.addMouseMotionListener(mouseListener);
-			add(boardPanel);
 		} else if (eventSource == createBoardMenuItem)
 			try {
-				showCreateNewBoardDialog();
+				createNewBoard();
 			} catch (BoardTooSmallException e) {
 			}
 		else if (eventSource == saveProgressMenuItem) {
 
-		} else if (eventSource == saveBoardMenuItem) {
-
+		} else if (eventSource == openBoardMenuItem) {
+			try {
+				openBoard();
+			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
+				e.printStackTrace();
+			}
 		} else if (eventSource == undoMenuItem) {
 
 		} else if (eventSource == redoMenuItem) {

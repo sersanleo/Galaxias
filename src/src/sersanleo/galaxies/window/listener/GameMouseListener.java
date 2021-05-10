@@ -14,7 +14,8 @@ import src.sersanleo.galaxies.window.BoardPanel;
 
 public class GameMouseListener implements MouseListener, MouseMotionListener {
 	// Umbral para marcar una arista cuando se arrastra el cursor
-	private static final float DRAG_THRESHOLD = 0.25f;
+	private static final float LENGTH_THRESHOLD = 0.25f;
+	private static final float CENTER_THRESHOLD = 0.3f;
 
 	private final Game game;
 	private final BoardPanel panel;
@@ -44,8 +45,9 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 
 			if (edgeX >= 0 && edgeX < game.board.width && edgeY >= 0 && edgeY < game.board.height - 1) {
 				if (softDetection) {
-					float threshold = Math.min(offsetX, 1 - offsetX);
-					if (threshold < DRAG_THRESHOLD)
+					float lengthThreshold = Math.min(offsetX, 1 - offsetX);
+					float centerThreshold = 0.5f - Math.min(offsetY, 1 - offsetY);
+					if (lengthThreshold < LENGTH_THRESHOLD || centerThreshold < CENTER_THRESHOLD)
 						return;
 				}
 
@@ -62,8 +64,9 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 
 			if (edgeX >= 0 && edgeX < game.board.width - 1 && edgeY >= 0 && edgeY < game.board.height) {
 				if (softDetection) {
-					float threshold = Math.min(offsetY, 1 - offsetY);
-					if (threshold < DRAG_THRESHOLD)
+					float lengthThreshold = Math.min(offsetY, 1 - offsetY);
+					float centerThreshold = 0.5f - Math.min(offsetX, 1 - offsetX);
+					if (lengthThreshold < LENGTH_THRESHOLD || centerThreshold < CENTER_THRESHOLD)
 						return;
 				}
 

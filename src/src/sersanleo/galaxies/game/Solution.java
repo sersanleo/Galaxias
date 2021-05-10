@@ -1,10 +1,14 @@
 package src.sersanleo.galaxies.game;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
+import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
+import src.sersanleo.galaxies.util.ExtFileInputStream;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public final class Solution {
@@ -17,16 +21,20 @@ public final class Solution {
 
 	private boolean solved = false;
 
-	public Solution(Board board) {
+	private Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges) {
 		this.board = board;
 
-		this.horizontalEdges = new boolean[board.width][board.height - 1];
-		this.verticalEdges = new boolean[board.width - 1][board.height];
+		this.horizontalEdges = horizontalEdges;
+		this.verticalEdges = verticalEdges;
 
 		this.cells = new CellState[board.width][board.height];
 		resetCells();
 
 		updateSolvedCells();
+	}
+
+	public Solution(Board board) {
+		this(board, new boolean[board.width][board.height - 1], new boolean[board.width - 1][board.height]);
 	}
 
 	private final void resetCells() {
@@ -192,5 +200,21 @@ public final class Solution {
 		CellState(Color color) {
 			this.color = color;
 		}
+	}
+
+	public final static Solution createFromStream(Board board, ExtFileInputStream stream)
+			throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
+		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
+		boolean[][] verticalEdges = new boolean[board.width - 1][board.height];
+
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				horizontalEdges[x][y] = stream.readBoolean();
+
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				verticalEdges[x][y] = stream.readBoolean();
+
+		return new Solution(board, horizontalEdges, verticalEdges);
 	}
 }

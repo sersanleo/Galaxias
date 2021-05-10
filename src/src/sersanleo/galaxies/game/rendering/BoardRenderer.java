@@ -15,7 +15,7 @@ public class BoardRenderer {
 	private static final float EDGE_WIDTH = 1;
 	private static final float SELECTED_EDGE_WIDTH_ADD = 2;
 	private static final float GALAXY_DIAMETER = 13;
-	private static final float GALAXY_BORDER = 2;
+	private static final float GALAXY_BORDER = 1.5f;
 
 	private static final Color EDGE_COLOR = Color.GRAY;
 	private static final Color SELECTED_EDGE_COLOR = Color.BLACK;

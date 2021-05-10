@@ -57,8 +57,9 @@ public class BoardPanel extends JPanel {
 	@Override
 	public final void setSize(int width, int height) {
 		fitRendererToSize(width, height);
-		
+
 		super.setSize(width, height);
+		super.setPreferredSize(new Dimension(width, height));
 	}
 
 	public final void fitToSize(int width, int height) {

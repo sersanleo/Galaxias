@@ -20,6 +20,12 @@ public class ExtFileInputStream extends FileInputStream {
 		super(arg0);
 	}
 
+	public final long readLong() throws IOException {
+		byte[] bytes = new byte[8];
+		this.read(bytes);
+		return ByteBuffer.wrap(bytes).getLong();
+	}
+
 	public final int readInt() throws IOException {
 		byte[] bytes = new byte[4];
 		this.read(bytes);

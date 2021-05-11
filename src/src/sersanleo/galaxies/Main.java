@@ -10,5 +10,6 @@ public final class Main {
 	public static void main(String[] args)
 			throws BoardTooSmallException, CanNotAddGalaxyException, InterruptedException, IOException {
 		GameWindow window = new GameWindow();
+		window.setVisible(true);
 	}
 }

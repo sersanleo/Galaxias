@@ -17,17 +17,20 @@ public class BoardRenderer {
 	private static final float GALAXY_DIAMETER = 13;
 	private static final float GALAXY_BORDER = 1.5f;
 
+	// Valores calculados
+	private static final float SELECTED_EDGE_WIDTH = EDGE_WIDTH + 2 * SELECTED_EDGE_WIDTH_ADD;
+	private static final float SELECTED_EDGE_LENGTH = CELL_SIZE + 2 * (EDGE_WIDTH + SELECTED_EDGE_WIDTH_ADD);
+	private static final float FULL_CELL_SIZE = CELL_SIZE + EDGE_WIDTH;
+	
+	// Colores
 	private static final Color EDGE_COLOR = Color.GRAY;
 	private static final Color SELECTED_EDGE_COLOR = Color.BLACK;
 	private static final Color GALAXY_COLOR = Color.GRAY;
 	private static final Color GALAXY_BORDER_COLOR = Color.DARK_GRAY;
 
-	// Valores calculados
-	private static final float SELECTED_EDGE_WIDTH = EDGE_WIDTH + 2 * SELECTED_EDGE_WIDTH_ADD;
-	private static final float SELECTED_EDGE_LENGTH = CELL_SIZE + 2 * (EDGE_WIDTH + SELECTED_EDGE_WIDTH_ADD);
-	private static final float FULL_CELL_SIZE = CELL_SIZE + EDGE_WIDTH;
-
 	public final Board board;
+
+	private float scale = 1;
 
 	private float cellSize = CELL_SIZE;
 	private float edgeWidth = EDGE_WIDTH;
@@ -42,13 +45,13 @@ public class BoardRenderer {
 	private int width;
 	private int height;
 
-	public BoardRenderer(Board board) {
+	public BoardRenderer(Board board, float scale) {
 		this.board = board;
+		scale(scale);
 	}
 
-	public BoardRenderer(Board board, float scale) {
-		this(board);
-		scale(scale);
+	public BoardRenderer(Board board) {
+		this(board, 1);
 	}
 
 	protected boolean horizontalEdge(int x, int y) {
@@ -64,6 +67,8 @@ public class BoardRenderer {
 	}
 
 	public final void scale(float scale) {
+		this.scale *= scale;
+
 		this.cellSize *= scale;
 		this.edgeWidth *= scale;
 		this.selectedEdgeWidthAdd *= scale;
@@ -77,6 +82,10 @@ public class BoardRenderer {
 		this.width = (int) Math.ceil(board.width * cellSize + (board.width + 1) * edgeWidth + 2 * selectedEdgeWidthAdd);
 		this.height = (int) Math
 				.ceil(board.height * cellSize + (board.height + 1) * edgeWidth + 2 * selectedEdgeWidthAdd);
+	}
+
+	public final void setScale(float scale) {
+		scale(scale / this.scale);
 	}
 
 	public final void paint(Graphics2D g) {
@@ -101,8 +110,8 @@ public class BoardRenderer {
 			// Horizontales
 			float edgeLength = edgeWidth + board.width * fullCellSize;
 			for (int y = 1; y < board.height; y++)
-				g.fill(new Rectangle2D.Float(selectedEdgeWidthAdd, selectedEdgeWidthAdd + y * fullCellSize,
-						edgeLength, edgeWidth));
+				g.fill(new Rectangle2D.Float(selectedEdgeWidthAdd, selectedEdgeWidthAdd + y * fullCellSize, edgeLength,
+						edgeWidth));
 
 			// Verticales
 			edgeLength = edgeWidth + board.height * fullCellSize;

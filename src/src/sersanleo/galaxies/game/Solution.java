@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.util.ExtFileInputStream;
+import src.sersanleo.galaxies.util.ExtFileOutputStream;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public final class Solution {
@@ -21,6 +23,9 @@ public final class Solution {
 
 	private boolean solved = false;
 
+	// Listeners
+	private final Set<SolutionFoundListener> solutionFoundListeners = new LinkedHashSet<SolutionFoundListener>();
+
 	private Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges) {
 		this.board = board;
 
@@ -28,13 +33,38 @@ public final class Solution {
 		this.verticalEdges = verticalEdges;
 
 		this.cells = new CellState[board.width][board.height];
-		resetCells();
-
-		updateSolvedCells();
+		updateCells();
 	}
 
 	public Solution(Board board) {
 		this(board, new boolean[board.width][board.height - 1], new boolean[board.width - 1][board.height]);
+	}
+
+	public final void set(Solution solution) {
+		if (board == solution.board) {
+			for (int x = 0; x < board.width; x++)
+				for (int y = 0; y < board.height - 1; y++)
+					horizontalEdges[x][y] = solution.horizontalEdges[x][y];
+
+			for (int x = 0; x < board.width - 1; x++)
+				for (int y = 0; y < board.height; y++)
+					verticalEdges[x][y] = solution.verticalEdges[x][y];
+
+			updateCells();
+		}
+	}
+
+	public final void addSolutionFoundListener(SolutionFoundListener listener) {
+		solutionFoundListeners.add(listener);
+	}
+
+	public final void removeSolutionFoundListener(SolutionFoundListener listener) {
+		solutionFoundListeners.remove(listener);
+	}
+
+	private final void propagateSolutionFound() {
+		for (SolutionFoundListener listener : solutionFoundListeners)
+			listener.solutionFound();
 	}
 
 	private final void resetCells() {
@@ -92,8 +122,8 @@ public final class Solution {
 		return cells[x][y];
 	}
 
-	public final void switchHorizontalEdge(int x, int y) {
-		// Se activará/desactivará la arista correspondiente si no hay una galaxia sobre
+	protected final boolean switchHorizontalEdge(int x, int y) {
+		// Se alternará la arista correspondiente si no hay una galaxia sobre
 		// ella
 		Set<Galaxy> galaxiesToCheck = new HashSet<Galaxy>();
 		galaxiesToCheck.add(new Galaxy(x - 0.5f, y + 0.5f));
@@ -101,14 +131,15 @@ public final class Solution {
 		galaxiesToCheck.add(new Galaxy(x + 0.5f, y + 0.5f));
 		for (Galaxy galaxyToCheck : galaxiesToCheck)
 			if (board.getGalaxies().contains(galaxyToCheck))
-				return;
+				return false;
 
 		horizontalEdges[x][y] = !horizontalEdges[x][y];
-		updateSolvedCells();
+		updateCells();
+		return true;
 	}
 
-	public final void switchVerticalEdge(int x, int y) {
-		// Se activará/desactivará la arista correspondiente si no hay una galaxia sobre
+	protected final boolean switchVerticalEdge(int x, int y) {
+		// Se alternará la arista correspondiente si no hay una galaxia sobre
 		// ella
 		Set<Galaxy> galaxiesToCheck = new HashSet<Galaxy>();
 		galaxiesToCheck.add(new Galaxy(x + 0.5f, y + 0.5f));
@@ -116,13 +147,14 @@ public final class Solution {
 		galaxiesToCheck.add(new Galaxy(x + 0.5f, y - 0.5f));
 		for (Galaxy galaxyToCheck : galaxiesToCheck)
 			if (board.getGalaxies().contains(galaxyToCheck))
-				return;
+				return false;
 
 		verticalEdges[x][y] = !verticalEdges[x][y];
-		updateSolvedCells();
+		updateCells();
+		return true;
 	}
 
-	public final void updateSolvedCells() {
+	public final void updateCells() {
 		resetCells();
 
 		int solvedCells = 0;
@@ -185,7 +217,7 @@ public final class Solution {
 
 		this.solved = solvedCells == board.area;
 		if (this.solved)
-			System.err.println("OLE");
+			propagateSolutionFound();
 	}
 
 	public final boolean verticalEdge(int x, int y) {
@@ -202,6 +234,16 @@ public final class Solution {
 		}
 	}
 
+	public final void write(ExtFileOutputStream stream) throws IOException {
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				stream.writeBoolean(horizontalEdges[x][y]);
+
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				stream.writeBoolean(horizontalEdges[x][y]);
+	}
+
 	public final static Solution createFromStream(Board board, ExtFileInputStream stream)
 			throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
 		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
@@ -216,5 +258,9 @@ public final class Solution {
 				verticalEdges[x][y] = stream.readBoolean();
 
 		return new Solution(board, horizontalEdges, verticalEdges);
+	}
+
+	public static interface SolutionFoundListener {
+		public void solutionFound();
 	}
 }

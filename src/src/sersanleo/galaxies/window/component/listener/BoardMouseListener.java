@@ -1,23 +1,24 @@
-package src.sersanleo.galaxies.window.listener;
+package src.sersanleo.galaxies.window.component.listener;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
-import javax.swing.JOptionPane;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.game.rendering.BoardRenderer;
-import src.sersanleo.galaxies.window.BoardPanel;
+import src.sersanleo.galaxies.window.GameWindow;
+import src.sersanleo.galaxies.window.component.BoardView;
 
 public class BoardMouseListener implements MouseListener {
 	private final Board board;
-	private final BoardPanel panel;
+	private final BoardView panel;
+	private final GameWindow window;
 
-	public BoardMouseListener(Board board, BoardPanel panel) {
+	public BoardMouseListener(Board board, BoardView panel, GameWindow window) {
 		this.board = board;
 		this.panel = panel;
+		this.window = window;
 	}
 
 	@Override
@@ -48,8 +49,9 @@ public class BoardMouseListener implements MouseListener {
 				if (!board.removeGalaxy(galaxy))
 					board.addGalaxy(galaxy);
 				panel.repaint();
+				window.resetStatus();
 			} catch (CanNotAddGalaxyException exc) {
-				JOptionPane.showMessageDialog(panel, exc.getLocalizedMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				window.setStatus(exc.getLocalizedMessage());
 			}
 		}
 	}

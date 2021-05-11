@@ -1,13 +1,13 @@
 package src.sersanleo.galaxies.window;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 
-import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -17,26 +17,33 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
+import src.sersanleo.galaxies.window.content.AppContent;
+import src.sersanleo.galaxies.window.content.BoardCreatorPanel;
+import src.sersanleo.galaxies.window.content.GamePanel;
 
 public class GameWindow extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
+	private static final int MIN_WIDTH = 400;
+	private static final int MIN_HEIGHT = 400;
+
+	public final AppConfig config;
+
 	// Menú
 	private final JMenuBar menuBar;
-
-	// Barra de estado
-	private final JPanel statusBar = null; // TODO
-	private final JLabel status = null; // TODO
 
 	private final JMenu gameMenu = new JMenu("Juego");
 	private final JMenuItem newGameMenuItem = new JMenuItem("Nuevo");
@@ -48,13 +55,25 @@ public class GameWindow extends JFrame implements ActionListener {
 	private final JMenuItem undoMenuItem = new JMenuItem("Deshacer");
 	private final JMenuItem redoMenuItem = new JMenuItem("Rehacer");
 
+	private final JMenu viewMenu = new JMenu("Vista");
+	private final ButtonGroup scaleButtonGroup = new ButtonGroup();
+	private final JMenuItem scale0_5MenuItem = new JRadioButtonMenuItem("50%");
+	private final JMenuItem scale0_75MenuItem = new JRadioButtonMenuItem("75%");
+	private final JMenuItem scale1_0MenuItem = new JRadioButtonMenuItem("100%");
+	private final JMenuItem scale1_25MenuItem = new JRadioButtonMenuItem("125%");
+	private final JMenuItem scale1_5MenuItem = new JRadioButtonMenuItem("150%");
+
+	// Barra de estado
+	private final JPanel statusBar;
+	private final JLabel status;
+
 	// Contenido
-	private JPanel content;
-	private JPanel nextContent;
+	private AppContent content;
 
 	public GameWindow() throws BoardTooSmallException, CanNotAddGalaxyException, IOException {
-		// Configuración del JFrame
 		super("Galaxias");
+
+		this.config = new AppConfig();
 
 		// Intenta establecer el Look & Feel del sistema
 		try {
@@ -63,10 +82,7 @@ public class GameWindow extends JFrame implements ActionListener {
 			e.printStackTrace();
 		}
 
-		setResizable(false);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+		setLayout(new BorderLayout());
 
 		// Menú
 		menuBar = new JMenuBar();
@@ -102,26 +118,58 @@ public class GameWindow extends JFrame implements ActionListener {
 		redoMenuItem.addActionListener(this);
 		editMenu.add(redoMenuItem);
 
-		setVisible(true);
-		pack();
+		// Vista
+		menuBar.add(viewMenu);
+		scaleButtonGroup.add(scale0_5MenuItem);
+		scaleButtonGroup.add(scale0_75MenuItem);
+		scaleButtonGroup.add(scale1_0MenuItem);
+		scaleButtonGroup.add(scale1_25MenuItem);
+		scaleButtonGroup.add(scale1_5MenuItem);
+		scaleButtonGroup.setSelected(scale1_0MenuItem.getModel(), true);
+
+		viewMenu.add(scale0_5MenuItem);
+		viewMenu.add(scale0_75MenuItem);
+		viewMenu.add(scale1_0MenuItem);
+		viewMenu.add(scale1_25MenuItem);
+		viewMenu.add(scale1_5MenuItem);
+
+		scale0_5MenuItem.addActionListener(this);
+		scale0_75MenuItem.addActionListener(this);
+		scale1_0MenuItem.addActionListener(this);
+		scale1_25MenuItem.addActionListener(this);
+		scale1_5MenuItem.addActionListener(this);
+
+		// Barra de estado
+		statusBar = new JPanel();
+		statusBar.setLayout(new BorderLayout());
+		add(statusBar, BorderLayout.SOUTH);
+
+		statusBar.add(new JSeparator(), BorderLayout.NORTH);
+
+		status = new JLabel();
+		status.setBorder(new EmptyBorder(5, 5, 5, 5));
+		statusBar.add(status, BorderLayout.SOUTH);
+		setStatus("Esperando una acción.");
+
+		setSize(MIN_WIDTH, MIN_HEIGHT);
+		setResizable(false);
+		setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		packAndCenter();
 	}
 
-	@Override
-	public final void setSize(int width, int height) {
-		Insets insets = this.getInsets();
-		Dimension menu = menuBar.getSize();
-
-		int horizontalInsets = insets.left + insets.right;
-		int verticalInsets = insets.top + insets.bottom + menu.height;
-		super.setSize(width + horizontalInsets, height + verticalInsets);
-	}
-
-	private final void setContent(JPanel content) {
-		if (this.content != null)
-			remove(this.content);
+	public final void setContent(AppContent content) {
+		if (this.content != null) {
+			if (this.content.canBeRemoved()) {
+				this.content.release();
+				remove(this.content);
+			} else
+				return;
+		}
 		this.content = content;
-		add(content);
-		pack();
+		add(content, BorderLayout.NORTH);
+		resetStatus();
+		packAndCenter();
 	}
 
 	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(5, 2, 14, 1);
@@ -138,12 +186,13 @@ public class GameWindow extends JFrame implements ActionListener {
 				JOptionPane.PLAIN_MESSAGE);
 
 		if (result == JOptionPane.OK_OPTION) {
-			BoardCreatorPanel panel = new BoardCreatorPanel(
-					new Board((int) widthSpinner.getValue(), (int) heightSpinner.getValue()));
-			setContent(panel);
+			int width = (int) widthSpinner.getValue();
+			int height = (int) heightSpinner.getValue();
+			BoardCreatorPanel content = new BoardCreatorPanel(this, new Board(width, height));
+			setContent(content);
 		}
 	}
-	
+
 	private final void openBoard() throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setDialogTitle("Abrir tablero");
@@ -156,9 +205,25 @@ public class GameWindow extends JFrame implements ActionListener {
 
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File file = fileChooser.getSelectedFile();
-			
-			setContent(new GamePanel(new Game(Board.createFromFile(file))));
+
+			GamePanel content = new GamePanel(this, new Game(Board.createFromFile(file)));
+			setContent(content);
 		}
+	}
+
+	public final void packAndCenter() {
+		pack();
+		this.setLocationRelativeTo(null);
+	}
+
+	public final void setStatus(String text) {
+		status.setText(text);
+		status.setToolTipText(text);
+	}
+
+	public final void resetStatus() {
+		status.setText(" ");
+		status.setToolTipText(null);
 	}
 
 	@Override
@@ -184,6 +249,15 @@ public class GameWindow extends JFrame implements ActionListener {
 
 		} else if (eventSource == redoMenuItem) {
 
-		}
+		} else if (eventSource == scale0_5MenuItem)
+			config.setBoardScale(0.5f);
+		else if (eventSource == scale0_75MenuItem)
+			config.setBoardScale(0.75f);
+		else if (eventSource == scale1_0MenuItem)
+			config.setBoardScale(1);
+		else if (eventSource == scale1_25MenuItem)
+			config.setBoardScale(1.25f);
+		else if (eventSource == scale1_5MenuItem)
+			config.setBoardScale(1.5f);
 	}
 }

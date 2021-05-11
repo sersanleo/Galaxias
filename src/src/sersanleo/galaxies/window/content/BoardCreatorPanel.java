@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window;
+package src.sersanleo.galaxies.window.content;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -9,33 +9,42 @@ import java.io.IOException;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import src.sersanleo.galaxies.AppConfig;
+import src.sersanleo.galaxies.AppConfig.AppConfigChangeListener;
+import src.sersanleo.galaxies.AppConfig.ConfigParameter;
 import src.sersanleo.galaxies.game.Board;
-import src.sersanleo.galaxies.window.listener.BoardMouseListener;
+import src.sersanleo.galaxies.window.GameWindow;
+import src.sersanleo.galaxies.window.component.BoardView;
+import src.sersanleo.galaxies.window.component.listener.BoardMouseListener;
 
-public class BoardCreatorPanel extends JPanel implements ActionListener {
+public class BoardCreatorPanel extends AppContent implements ActionListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
 
 	public final Board board;
 
-	private final BoardPanel boardPanel;
+	private final BoardView boardView;
 	private final JButton saveButton;
 
-	public BoardCreatorPanel(Board board) {
+	public BoardCreatorPanel(GameWindow window, Board board) {
+		super(window);
 		this.board = board;
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-		boardPanel = new BoardPanel(board);
-		boardPanel.addMouseListener(new BoardMouseListener(board, boardPanel));
-		add(boardPanel);
+		boardView = new BoardView(board, window.config.getBoardScale());
+		boardView.setAlignmentX(Component.CENTER_ALIGNMENT);
+		boardView.addMouseListener(new BoardMouseListener(board, boardView, window));
+		add(boardView);
 
-		saveButton = new JButton("Guardar");
+		saveButton = new JButton("Guardar tablero");
+		saveButton.setToolTipText("Guardar tablero");
 		saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		saveButton.addActionListener(this);
 		add(saveButton);
+
+		window.config.addAppConfigChangeListener(this);
 	}
 
 	private final void save() throws IOException {
@@ -45,6 +54,7 @@ public class BoardCreatorPanel extends JPanel implements ActionListener {
 				Board.FILE_EXT);
 		fileChooser.addChoosableFileFilter(tsb);
 		fileChooser.setFileFilter(tsb);
+		fileChooser.setSelectedFile(new File(board.width + "x" + board.height + "." + Board.FILE_EXT));
 
 		int userSelection = fileChooser.showSaveDialog(this);
 
@@ -72,5 +82,18 @@ public class BoardCreatorPanel extends JPanel implements ActionListener {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+	}
+
+	@Override
+	public void appConfigChange(AppConfig config, ConfigParameter parameter) {
+		if (parameter == ConfigParameter.BOARD_SCALE) {
+			boardView.setScale(config.getBoardScale());
+			window.packAndCenter();
+		}
+	}
+
+	@Override
+	public void release() {
+		window.config.removeAppConfigChangeListener(this);
 	}
 }

@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window.listener;
+package src.sersanleo.galaxies.window.component.listener;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
@@ -8,28 +8,31 @@ import java.util.HashSet;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.Game;
+import src.sersanleo.galaxies.game.Movement;
+import src.sersanleo.galaxies.game.Movement.EdgeType;
 import src.sersanleo.galaxies.game.rendering.BoardRenderer;
-import src.sersanleo.galaxies.util.Vector2i;
-import src.sersanleo.galaxies.window.BoardPanel;
+import src.sersanleo.galaxies.window.component.BoardView;
+import src.sersanleo.galaxies.window.content.GamePanel;
 
 public class GameMouseListener implements MouseListener, MouseMotionListener {
 	// Umbral para marcar una arista cuando se arrastra el cursor
 	private static final float LENGTH_THRESHOLD = 0.25f;
-	private static final float CENTER_THRESHOLD = 0.3f;
+	private static final float CENTER_THRESHOLD = 0.35f;
 
 	private final Game game;
-	private final BoardPanel panel;
+	private final GamePanel gamePanel;
+	private final BoardView boardView;
 
-	private final Set<Vector2i> horizontalEdges = new HashSet<Vector2i>();
-	private final Set<Vector2i> verticalEdges = new HashSet<Vector2i>();
+	private final Set<Movement> movements = new HashSet<Movement>();
 
-	public GameMouseListener(Game game, BoardPanel panel) {
+	public GameMouseListener(Game game, GamePanel gamePanel, BoardView panel) {
 		this.game = game;
-		this.panel = panel;
+		this.gamePanel = gamePanel;
+		this.boardView = panel;
 	}
 
 	private final void switchEdge(int mouseX, int mouseY, boolean softDetection) {
-		BoardRenderer renderer = panel.renderer;
+		BoardRenderer renderer = boardView.renderer;
 
 		float x = (mouseX - renderer.getSelectedEdgeWidth() / 2) / renderer.getFullCellSize();
 		float y = (mouseY - renderer.getSelectedEdgeWidth() / 2) / renderer.getFullCellSize();
@@ -51,11 +54,11 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 						return;
 				}
 
-				Vector2i edge = new Vector2i(edgeX, edgeY);
-				if (!horizontalEdges.contains(edge)) {
-					game.solution.switchHorizontalEdge(edgeX, edgeY);
-					horizontalEdges.add(edge);
-					panel.repaint();
+				Movement movement = new Movement(edgeX, edgeY, EdgeType.HORIZONTAL);
+				if (!movements.contains(movement) && movement.apply(game, false)) {
+					gamePanel.updateUndoButton();
+					movements.add(movement);
+					gamePanel.repaint();
 				}
 			}
 		} else { // Arista vertical
@@ -70,11 +73,11 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 						return;
 				}
 
-				Vector2i edge = new Vector2i(edgeX, edgeY);
-				if (!verticalEdges.contains(edge)) {
-					game.solution.switchVerticalEdge(edgeX, edgeY);
-					verticalEdges.add(edge);
-					panel.repaint();
+				Movement movement = new Movement(edgeX, edgeY, EdgeType.VERTICAL);
+				if (!movements.contains(movement) && movement.apply(game, false)) {
+					gamePanel.updateUndoButton();
+					movements.add(movement);
+					gamePanel.repaint();
 				}
 			}
 		}
@@ -99,8 +102,7 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
-		horizontalEdges.clear();
-		verticalEdges.clear();
+		movements.clear();
 	}
 
 	@Override

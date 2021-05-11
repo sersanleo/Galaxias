@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window;
+package src.sersanleo.galaxies.window.component;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -11,36 +11,41 @@ import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.rendering.BoardRenderer;
 import src.sersanleo.galaxies.game.rendering.GameRenderer;
 
-public class BoardPanel extends JPanel {
+public class BoardView extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	public final BoardRenderer renderer;
 
-	private BoardPanel(BoardRenderer renderer) {
+	private BoardView(BoardRenderer renderer) {
 		this.renderer = renderer;
-
-		super.setSize(renderer.getWidth(), renderer.getHeight());
-		super.setPreferredSize(new Dimension(renderer.getWidth(), renderer.getHeight()));
+		fitToRendererSize();
 	}
 
-	public BoardPanel(Board board, float scale) {
+	public BoardView(Board board, float scale) {
 		this(new BoardRenderer(board, scale));
 	}
 
-	public BoardPanel(Board board) {
+	public BoardView(Board board) {
 		this(board, 1);
 	}
 
-	public BoardPanel(Board board, float width, float height) {
+	public BoardView(Board board, float width, float height) {
 		this(new BoardRenderer(board));
 	}
 
-	public BoardPanel(Game game, float scale) {
+	public BoardView(Game game, float scale) {
 		this(new GameRenderer(game, scale));
 	}
 
-	public BoardPanel(Game game) {
+	public BoardView(Game game) {
 		this(game, 1);
+	}
+
+	private final void fitToRendererSize() {
+		Dimension dimension = new Dimension(renderer.getWidth(), renderer.getHeight());
+		super.setSize(dimension);
+		super.setPreferredSize(dimension);
+		super.setMaximumSize(dimension);
 	}
 
 	@Override
@@ -60,12 +65,16 @@ public class BoardPanel extends JPanel {
 
 		super.setSize(width, height);
 		super.setPreferredSize(new Dimension(width, height));
+		super.setMaximumSize(new Dimension(width, height));
 	}
 
 	public final void fitToSize(int width, int height) {
 		fitRendererToSize(width, height);
+		fitToRendererSize();
+	}
 
-		super.setSize(renderer.getWidth(), renderer.getHeight());
-		super.setPreferredSize(new Dimension(renderer.getWidth(), renderer.getHeight()));
+	public final void setScale(float scale) {
+		renderer.setScale(scale);
+		fitToRendererSize();
 	}
 }

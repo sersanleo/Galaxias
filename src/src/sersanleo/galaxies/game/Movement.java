@@ -1,21 +1,36 @@
 package src.sersanleo.galaxies.game;
 
+import java.io.IOException;
+
+import src.sersanleo.galaxies.util.ExtFileInputStream;
+import src.sersanleo.galaxies.util.ExtFileOutputStream;
+
 public class Movement {
 	public final int x;
 	public final int y;
 	public final EdgeType edge;
-	
+
 	public Movement(int x, int y, EdgeType edge) {
 		this.x = x;
 		this.y = y;
 		this.edge = edge;
 	}
-	
+
 	public final boolean apply(Game game, boolean undoing) {
-		if(edge == EdgeType.HORIZONTAL)
+		if (edge == EdgeType.HORIZONTAL)
 			return game.switchHorizontalEdge(x, y, undoing);
 		else
 			return game.switchVerticalEdge(x, y, undoing);
+	}
+
+	public final void write(ExtFileOutputStream stream) throws IOException {
+		stream.writeInt(x);
+		stream.writeInt(y);
+		stream.write(edge.ordinal());
+	}
+
+	public final static Movement createFromStream(ExtFileInputStream stream) throws IOException {
+		return new Movement(stream.readInt(), stream.readInt(), EdgeType.values()[stream.read()]);
 	}
 
 	public static enum EdgeType {

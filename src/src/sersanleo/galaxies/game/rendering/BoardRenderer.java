@@ -25,7 +25,7 @@ public class BoardRenderer {
 	// Colores
 	private static final Color EDGE_COLOR = Color.GRAY;
 	private static final Color SELECTED_EDGE_COLOR = Color.BLACK;
-	private static final Color GALAXY_COLOR = Color.GRAY;
+	private static final Color GALAXY_COLOR = Color.WHITE;
 	private static final Color GALAXY_BORDER_COLOR = Color.DARK_GRAY;
 
 	public final Board board;

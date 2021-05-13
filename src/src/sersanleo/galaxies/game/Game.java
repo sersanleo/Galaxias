@@ -15,7 +15,7 @@ import src.sersanleo.galaxies.util.ExtFileOutputStream;
 
 public class Game implements SolutionFoundListener {
 	private static final int MAX_UNDO = 10;
-	
+
 	public final Board board;
 	public final Solution solution;
 
@@ -23,6 +23,8 @@ public class Game implements SolutionFoundListener {
 	private LinkedList<Movement> movements = new LinkedList<Movement>();
 	private long elapsedSeconds;
 	private final LocalDateTime start;
+
+	private boolean isSaved = true;
 
 	public Game(Board board, Solution solution, int moves, long elapsedSeconds) {
 		this.board = board;
@@ -32,8 +34,16 @@ public class Game implements SolutionFoundListener {
 		this.start = LocalDateTime.now();
 	}
 
+	public Game(Board board, Solution solution) {
+		this(board, solution, 0, 0);
+	}
+
 	public Game(Board board) {
 		this(board, new Solution(board), 0, 0);
+	}
+
+	public final boolean isSaved() {
+		return isSaved;
 	}
 
 	public final long elapsedSeconds() {
@@ -43,15 +53,20 @@ public class Game implements SolutionFoundListener {
 	private final void addMovement(Movement movement) {
 		while (movements.size() >= MAX_UNDO)
 			movements.removeFirst();
-		
+
 		movements.add(movement);
 	}
 
 	public final boolean switchHorizontalEdge(int x, int y, boolean undoing) {
 		if (solution.switchHorizontalEdge(x, y)) {
-			moves++;
-			if (!undoing)
+			if (!undoing) {
+				moves++;
+				isSaved = false;
 				addMovement(new Movement(x, y, EdgeType.HORIZONTAL));
+			} else {
+				moves--;
+				isSaved = false;
+			}
 			return true;
 		}
 		return false;
@@ -59,9 +74,14 @@ public class Game implements SolutionFoundListener {
 
 	public final boolean switchVerticalEdge(int x, int y, boolean undoing) {
 		if (solution.switchVerticalEdge(x, y)) {
-			moves++;
-			if (!undoing)
+			if (!undoing) {
+				moves++;
+				isSaved = false;
 				addMovement(new Movement(x, y, EdgeType.VERTICAL));
+			} else {
+				moves--;
+				isSaved = false;
+			}
 			return true;
 		}
 		return false;
@@ -92,7 +112,9 @@ public class Game implements SolutionFoundListener {
 
 		board.write(stream);
 		solution.write(stream);
+
 		stream.writeInt(moves);
+
 		if (solution.isSolved())
 			stream.writeLong(elapsedSeconds);
 		else
@@ -100,6 +122,8 @@ public class Game implements SolutionFoundListener {
 
 		stream.flush();
 		stream.close();
+		
+		isSaved = true;
 	}
 
 	public final static Game createFromFile(File file)
@@ -108,6 +132,7 @@ public class Game implements SolutionFoundListener {
 
 		Board board = Board.createFromStream(stream);
 		Solution solution = Solution.createFromStream(board, stream);
+
 		int moves = stream.readInt();
 		long elapsedSeconds = stream.readLong();
 

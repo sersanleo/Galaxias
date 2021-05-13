@@ -241,7 +241,7 @@ public final class Solution {
 
 		for (int x = 0; x < board.width - 1; x++)
 			for (int y = 0; y < board.height; y++)
-				stream.writeBoolean(horizontalEdges[x][y]);
+				stream.writeBoolean(verticalEdges[x][y]);
 	}
 
 	public final static Solution createFromStream(Board board, ExtFileInputStream stream)

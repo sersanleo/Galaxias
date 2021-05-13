@@ -71,15 +71,6 @@ public class Board extends BoundingBoxi {
 		solution.write(stream);
 	}
 
-	public final void save(File file) throws IOException {
-		ExtFileOutputStream stream = new ExtFileOutputStream(file);
-
-		write(stream);
-
-		stream.flush();
-		stream.close();
-	}
-
 	public final static Board createFromStream(ExtFileInputStream stream)
 			throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
 		Board board = new Board(stream.readInt(), stream.readInt());

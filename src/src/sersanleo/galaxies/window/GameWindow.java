@@ -46,14 +46,11 @@ public class GameWindow extends JFrame implements ActionListener {
 	private final JMenuBar menuBar;
 
 	private final JMenu gameMenu = new JMenu("Juego");
-	private final JMenuItem newGameMenuItem = new JMenuItem("Nuevo");
+	
+	private final JMenu newGameMenuItem = new JMenu("Nuevo");
+	private final JMenuItem generateBoardMenuItem = new JMenuItem("Generar tablero");
 	private final JMenuItem createBoardMenuItem = new JMenuItem("Crear tablero");
-	private final JMenuItem saveProgressMenuItem = new JMenuItem("Guardar partida");
-	private final JMenuItem openBoardMenuItem = new JMenuItem("Abrir tablero");
-
-	private final JMenu editMenu = new JMenu("Editar");
-	private final JMenuItem undoMenuItem = new JMenuItem("Deshacer");
-	private final JMenuItem redoMenuItem = new JMenuItem("Rehacer");
+	private final JMenuItem loadGameMenuItem = new JMenuItem("Cargar partida");
 
 	private final JMenu viewMenu = new JMenu("Vista");
 	private final ButtonGroup scaleButtonGroup = new ButtonGroup();
@@ -94,29 +91,15 @@ public class GameWindow extends JFrame implements ActionListener {
 		newGameMenuItem.addActionListener(this);
 		gameMenu.add(newGameMenuItem);
 
+		generateBoardMenuItem.addActionListener(this);
+		generateBoardMenuItem.setEnabled(false);
+		newGameMenuItem.add(generateBoardMenuItem);
+
 		createBoardMenuItem.addActionListener(this);
-		gameMenu.add(createBoardMenuItem);
+		newGameMenuItem.add(createBoardMenuItem);
 
-		gameMenu.add(new JSeparator());
-
-		saveProgressMenuItem.setEnabled(false);
-		saveProgressMenuItem.addActionListener(this);
-		gameMenu.add(saveProgressMenuItem);
-
-		openBoardMenuItem.addActionListener(this);
-		gameMenu.add(openBoardMenuItem);
-
-		// Editar
-		editMenu.setEnabled(false);
-		menuBar.add(editMenu);
-
-		undoMenuItem.setEnabled(false);
-		undoMenuItem.addActionListener(this);
-		editMenu.add(undoMenuItem);
-
-		redoMenuItem.setEnabled(false);
-		redoMenuItem.addActionListener(this);
-		editMenu.add(redoMenuItem);
+		loadGameMenuItem.addActionListener(this);
+		gameMenu.add(loadGameMenuItem);
 
 		// Vista
 		menuBar.add(viewMenu);
@@ -158,9 +141,9 @@ public class GameWindow extends JFrame implements ActionListener {
 		packAndCenter();
 	}
 
-	public final void setContent(AppContent content) {
+	public final void setContent(AppContent content, boolean force) {
 		if (this.content != null) {
-			if (this.content.canBeRemoved()) {
+			if (force || this.content.canBeRemoved()) {
 				this.content.release();
 				remove(this.content);
 			} else
@@ -170,6 +153,10 @@ public class GameWindow extends JFrame implements ActionListener {
 		add(content, BorderLayout.NORTH);
 		resetStatus();
 		packAndCenter();
+	}
+
+	public final void setContent(AppContent content) {
+		setContent(content, false);
 	}
 
 	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(5, 2, 14, 1);
@@ -193,10 +180,10 @@ public class GameWindow extends JFrame implements ActionListener {
 		}
 	}
 
-	private final void openBoard() throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+	private final void loadGame() throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
 		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setDialogTitle("Abrir tablero");
-		FileNameExtensionFilter tsb = new FileNameExtensionFilter("Tablero de galaxias (." + Board.FILE_EXT + ")",
+		fileChooser.setDialogTitle("Cargar partida");
+		FileNameExtensionFilter tsb = new FileNameExtensionFilter("Partida de galaxias (." + Board.FILE_EXT + ")",
 				Board.FILE_EXT);
 		fileChooser.addChoosableFileFilter(tsb);
 		fileChooser.setFileFilter(tsb);
@@ -206,7 +193,7 @@ public class GameWindow extends JFrame implements ActionListener {
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File file = fileChooser.getSelectedFile();
 
-			GamePanel content = new GamePanel(this, new Game(Board.createFromFile(file)));
+			GamePanel content = new GamePanel(this, Game.createFromFile(file));
 			setContent(content);
 		}
 	}
@@ -237,18 +224,12 @@ public class GameWindow extends JFrame implements ActionListener {
 				createNewBoard();
 			} catch (BoardTooSmallException e) {
 			}
-		else if (eventSource == saveProgressMenuItem) {
-
-		} else if (eventSource == openBoardMenuItem) {
+		else if (eventSource == loadGameMenuItem) {
 			try {
-				openBoard();
+				loadGame();
 			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 				e.printStackTrace();
 			}
-		} else if (eventSource == undoMenuItem) {
-
-		} else if (eventSource == redoMenuItem) {
-
 		} else if (eventSource == scale0_5MenuItem)
 			config.setBoardScale(0.5f);
 		else if (eventSource == scale0_75MenuItem)

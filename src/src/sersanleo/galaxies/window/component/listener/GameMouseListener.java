@@ -55,8 +55,9 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 				}
 
 				Movement movement = new Movement(edgeX, edgeY, EdgeType.HORIZONTAL);
-				if (!movements.contains(movement) && movement.apply(game, false)) {
-					gamePanel.updateUndoButton();
+				if (!movements.contains(movement) && movement.apply(game, false, false)) {
+					gamePanel.updateUndoRedoButtons();
+					gamePanel.updateMovesLabel();
 					movements.add(movement);
 					gamePanel.repaint();
 				}
@@ -74,8 +75,9 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 				}
 
 				Movement movement = new Movement(edgeX, edgeY, EdgeType.VERTICAL);
-				if (!movements.contains(movement) && movement.apply(game, false)) {
-					gamePanel.updateUndoButton();
+				if (!movements.contains(movement) && movement.apply(game, false, false)) {
+					gamePanel.updateUndoRedoButtons();
+					gamePanel.updateMovesLabel();
 					movements.add(movement);
 					gamePanel.repaint();
 				}

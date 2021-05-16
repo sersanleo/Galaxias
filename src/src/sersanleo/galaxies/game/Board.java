@@ -1,6 +1,5 @@
 package src.sersanleo.galaxies.game;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,6 +10,7 @@ import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.util.BoundingBoxi;
 import src.sersanleo.galaxies.util.ExtFileInputStream;
 import src.sersanleo.galaxies.util.ExtFileOutputStream;
+import src.sersanleo.galaxies.util.WebUtil;
 
 public class Board extends BoundingBoxi {
 	public final static String FILE_EXT = "tsb";
@@ -84,11 +84,35 @@ public class Board extends BoundingBoxi {
 		return board;
 	}
 
-	public final static Board createFromFile(File file)
-			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
-		ExtFileInputStream stream = new ExtFileInputStream(file);
-		Board board = createFromStream(stream);
-		stream.close();
+	public final static Board createFromRaetsel(int id) throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+		String codigo = WebUtil
+				.getURLSource("https://www.janko.at/Raetsel/Galaxien/" + String.format("%03d", id) + ".a.htm");
+		String map = codigo.split("problem\r\n")[1].split("\r\nsolution")[0].trim();
+
+		String[] sp = map.split("\r\n");
+
+		Board board = new Board((int) Math.ceil(sp[0].length() / 2f), sp.length);
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++) {
+				char ch = sp[y].charAt(2 * x);
+				switch (ch) {
+				case '-':
+					break;
+				case '0':
+					board.addGalaxy(x, y);
+					break;
+				case '1':
+					board.addGalaxy(x + 0.5f, y);
+					break;
+				case '2':
+					board.addGalaxy(x, y + 0.5f);
+					break;
+				case '3':
+					board.addGalaxy(x + 0.5f, y + 0.5f);
+					break;
+				}
+			}
+		
 		return board;
 	}
 

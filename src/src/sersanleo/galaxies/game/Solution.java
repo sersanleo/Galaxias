@@ -18,6 +18,7 @@ public final class Solution {
 
 	private final boolean[][] horizontalEdges;
 	private final boolean[][] verticalEdges;
+	private int moves;
 
 	private CellState[][] cells;
 
@@ -26,18 +27,19 @@ public final class Solution {
 	// Listeners
 	private final Set<SolutionFoundListener> solutionFoundListeners = new LinkedHashSet<SolutionFoundListener>();
 
-	private Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges) {
+	private Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges, int moves) {
 		this.board = board;
 
 		this.horizontalEdges = horizontalEdges;
 		this.verticalEdges = verticalEdges;
+		this.moves = moves;
 
 		this.cells = new CellState[board.width][board.height];
 		updateCells();
 	}
 
 	public Solution(Board board) {
-		this(board, new boolean[board.width][board.height - 1], new boolean[board.width - 1][board.height]);
+		this(board, new boolean[board.width][board.height - 1], new boolean[board.width - 1][board.height], 0);
 	}
 
 	public final void set(Solution solution) {
@@ -49,6 +51,8 @@ public final class Solution {
 			for (int x = 0; x < board.width - 1; x++)
 				for (int y = 0; y < board.height; y++)
 					verticalEdges[x][y] = solution.verticalEdges[x][y];
+
+			this.moves = solution.moves;
 
 			updateCells();
 		}
@@ -122,7 +126,7 @@ public final class Solution {
 		return cells[x][y];
 	}
 
-	protected final boolean switchHorizontalEdge(int x, int y) {
+	protected final boolean switchHorizontalEdge(int x, int y, boolean undoing) {
 		// Se alternará la arista correspondiente si no hay una galaxia sobre
 		// ella
 		Set<Galaxy> galaxiesToCheck = new HashSet<Galaxy>();
@@ -134,11 +138,16 @@ public final class Solution {
 				return false;
 
 		horizontalEdges[x][y] = !horizontalEdges[x][y];
+		if (undoing)
+			moves--;
+		else
+			moves++;
+
 		updateCells();
 		return true;
 	}
 
-	protected final boolean switchVerticalEdge(int x, int y) {
+	protected final boolean switchVerticalEdge(int x, int y, boolean undoing) {
 		// Se alternará la arista correspondiente si no hay una galaxia sobre
 		// ella
 		Set<Galaxy> galaxiesToCheck = new HashSet<Galaxy>();
@@ -150,6 +159,11 @@ public final class Solution {
 				return false;
 
 		verticalEdges[x][y] = !verticalEdges[x][y];
+		if (undoing)
+			moves--;
+		else
+			moves++;
+
 		updateCells();
 		return true;
 	}
@@ -242,6 +256,8 @@ public final class Solution {
 		for (int x = 0; x < board.width - 1; x++)
 			for (int y = 0; y < board.height; y++)
 				stream.writeBoolean(verticalEdges[x][y]);
+
+		stream.writeInt(moves);
 	}
 
 	public final static Solution createFromStream(Board board, ExtFileInputStream stream)
@@ -257,10 +273,16 @@ public final class Solution {
 			for (int y = 0; y < board.height; y++)
 				verticalEdges[x][y] = stream.readBoolean();
 
-		return new Solution(board, horizontalEdges, verticalEdges);
+		int moves = stream.readInt();
+
+		return new Solution(board, horizontalEdges, verticalEdges, moves);
 	}
 
 	public static interface SolutionFoundListener {
 		public void solutionFound();
+	}
+
+	public final int getMoves() {
+		return moves;
 	}
 }

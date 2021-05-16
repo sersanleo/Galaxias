@@ -16,11 +16,11 @@ public class Movement {
 		this.edge = edge;
 	}
 
-	public final boolean apply(Game game, boolean undoing) {
+	public final boolean apply(Game game, boolean undoing, boolean redoing) {
 		if (edge == EdgeType.HORIZONTAL)
-			return game.switchHorizontalEdge(x, y, undoing);
+			return game.switchHorizontalEdge(x, y, undoing, redoing);
 		else
-			return game.switchVerticalEdge(x, y, undoing);
+			return game.switchVerticalEdge(x, y, undoing, redoing);
 	}
 
 	public final void write(ExtFileOutputStream stream) throws IOException {

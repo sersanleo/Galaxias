@@ -18,28 +18,48 @@ public class Game implements SolutionFoundListener {
 
 	public final Board board;
 	public final Solution solution;
+	private Solution savedState;
 
-	private int moves;
-	private LinkedList<Movement> movements = new LinkedList<Movement>();
 	private long elapsedSeconds;
-	private final LocalDateTime start;
 
+	private LinkedList<Movement> undoHistory = new LinkedList<Movement>();
+	private LinkedList<Movement> redoHistory = new LinkedList<Movement>();
+	private final LocalDateTime start;
 	private boolean isSaved = true;
 
-	public Game(Board board, Solution solution, int moves, long elapsedSeconds) {
+	public Game(Board board, Solution solution, Solution savedState, long elapsedSeconds) {
 		this.board = board;
 		this.solution = solution;
 		this.solution.addSolutionFoundListener(this);
+		this.savedState = savedState;
+
 		this.elapsedSeconds = elapsedSeconds;
+
 		this.start = LocalDateTime.now();
 	}
 
 	public Game(Board board, Solution solution) {
-		this(board, solution, 0, 0);
+		this(board, solution, null, 0);
 	}
 
 	public Game(Board board) {
-		this(board, new Solution(board), 0, 0);
+		this(board, new Solution(board));
+	}
+
+	public final boolean hasSavedState() {
+		return savedState != null;
+	}
+
+	public final void saveState() {
+		savedState = new Solution(board);
+		savedState.set(solution);
+		isSaved = false;
+	}
+
+	public final void loadState() {
+		solution.set(savedState);
+		savedState = null;
+		isSaved = false;
 	}
 
 	public final boolean isSaved() {
@@ -47,54 +67,65 @@ public class Game implements SolutionFoundListener {
 	}
 
 	public final long elapsedSeconds() {
-		return elapsedSeconds + Math.max(0, ChronoUnit.SECONDS.between(LocalDateTime.now(), start));
+		return elapsedSeconds + Math.max(0, ChronoUnit.SECONDS.between(start, LocalDateTime.now()));
 	}
 
-	private final void addMovement(Movement movement) {
-		while (movements.size() >= MAX_UNDO)
-			movements.removeFirst();
+	private final void addMovement(Movement movement, boolean redoing) {
+		if (!redoing)
+			redoHistory.clear();
+		while (undoHistory.size() >= MAX_UNDO)
+			undoHistory.removeFirst();
 
-		movements.add(movement);
+		undoHistory.add(movement);
 	}
 
-	public final boolean switchHorizontalEdge(int x, int y, boolean undoing) {
-		if (solution.switchHorizontalEdge(x, y)) {
-			if (!undoing) {
-				moves++;
-				isSaved = false;
-				addMovement(new Movement(x, y, EdgeType.HORIZONTAL));
-			} else {
-				moves--;
-				isSaved = false;
-			}
+	public final boolean switchHorizontalEdge(int x, int y, boolean undoing, boolean redoing) {
+		if (solution.switchHorizontalEdge(x, y, undoing)) {
+			isSaved = false;
+
+			Movement movement = new Movement(x, y, EdgeType.HORIZONTAL);
+			if (!undoing)
+				addMovement(movement, redoing);
+			else
+				redoHistory.addLast(movement);
+
 			return true;
 		}
 		return false;
 	}
 
-	public final boolean switchVerticalEdge(int x, int y, boolean undoing) {
-		if (solution.switchVerticalEdge(x, y)) {
-			if (!undoing) {
-				moves++;
-				isSaved = false;
-				addMovement(new Movement(x, y, EdgeType.VERTICAL));
-			} else {
-				moves--;
-				isSaved = false;
-			}
+	public final boolean switchVerticalEdge(int x, int y, boolean undoing, boolean redoing) {
+		if (solution.switchVerticalEdge(x, y, undoing)) {
+			isSaved = false;
+
+			Movement movement = new Movement(x, y, EdgeType.VERTICAL);
+			if (!undoing)
+				addMovement(movement, redoing);
+			else
+				redoHistory.addLast(movement);
+
 			return true;
 		}
 		return false;
 	}
 
 	public final boolean canUndo() {
-		return movements.size() > 0;
+		return undoHistory.size() > 0 && !solution.isSolved();
+	}
+
+	public final boolean canRedo() {
+		return redoHistory.size() > 0 && !solution.isSolved();
 	}
 
 	public final boolean undo() {
 		if (canUndo())
-			return movements.removeLast().apply(this, true);
+			return undoHistory.removeLast().apply(this, true, false);
+		return false;
+	}
 
+	public final boolean redo() {
+		if (canRedo())
+			return redoHistory.removeLast().apply(this, false, true);
 		return false;
 	}
 
@@ -107,36 +138,44 @@ public class Game implements SolutionFoundListener {
 		elapsedSeconds = elapsedSeconds();
 	}
 
+	public final void write(ExtFileOutputStream stream) throws IOException {
+		board.write(stream);
+		solution.write(stream);
+		boolean hasSavedState = hasSavedState();
+		stream.writeBoolean(hasSavedState);
+		if (hasSavedState)
+			savedState.write(stream);
+
+		stream.writeLong(elapsedSeconds());
+	}
+
 	public final void save(File file) throws IOException {
 		ExtFileOutputStream stream = new ExtFileOutputStream(file);
 
-		board.write(stream);
-		solution.write(stream);
-
-		stream.writeInt(moves);
-
-		if (solution.isSolved())
-			stream.writeLong(elapsedSeconds);
-		else
-			stream.writeLong(elapsedSeconds());
+		write(stream);
 
 		stream.flush();
 		stream.close();
-		
+
 		isSaved = true;
+	}
+
+	public final static Game createFromStream(ExtFileInputStream stream)
+			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+		Board board = Board.createFromStream(stream);
+		Solution solution = Solution.createFromStream(board, stream);
+		Solution savedState = stream.readBoolean() ? Solution.createFromStream(board, stream) : null;
+
+		long elapsedSeconds = stream.readLong();
+
+		return new Game(board, solution, savedState, elapsedSeconds);
 	}
 
 	public final static Game createFromFile(File file)
 			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
 		ExtFileInputStream stream = new ExtFileInputStream(file);
-
-		Board board = Board.createFromStream(stream);
-		Solution solution = Solution.createFromStream(board, stream);
-
-		int moves = stream.readInt();
-		long elapsedSeconds = stream.readLong();
-
+		Game game = createFromStream(stream);
 		stream.close();
-		return new Game(board, solution, moves, elapsedSeconds);
+		return game;
 	}
 }

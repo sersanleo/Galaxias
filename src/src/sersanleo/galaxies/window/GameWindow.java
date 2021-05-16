@@ -46,10 +46,11 @@ public class GameWindow extends JFrame implements ActionListener {
 	private final JMenuBar menuBar;
 
 	private final JMenu gameMenu = new JMenu("Juego");
-	
+
 	private final JMenu newGameMenuItem = new JMenu("Nuevo");
 	private final JMenuItem generateBoardMenuItem = new JMenuItem("Generar tablero");
 	private final JMenuItem createBoardMenuItem = new JMenuItem("Crear tablero");
+	private final JMenuItem raetselMenuItem = new JMenuItem("De raetsel (debug)");
 	private final JMenuItem loadGameMenuItem = new JMenuItem("Cargar partida");
 
 	private final JMenu viewMenu = new JMenu("Vista");
@@ -88,7 +89,6 @@ public class GameWindow extends JFrame implements ActionListener {
 		// Juego
 		menuBar.add(gameMenu);
 
-		newGameMenuItem.addActionListener(this);
 		gameMenu.add(newGameMenuItem);
 
 		generateBoardMenuItem.addActionListener(this);
@@ -97,6 +97,9 @@ public class GameWindow extends JFrame implements ActionListener {
 
 		createBoardMenuItem.addActionListener(this);
 		newGameMenuItem.add(createBoardMenuItem);
+
+		raetselMenuItem.addActionListener(this);
+		newGameMenuItem.add(raetselMenuItem);
 
 		loadGameMenuItem.addActionListener(this);
 		gameMenu.add(loadGameMenuItem);
@@ -132,13 +135,14 @@ public class GameWindow extends JFrame implements ActionListener {
 		status = new JLabel();
 		status.setBorder(new EmptyBorder(5, 5, 5, 5));
 		statusBar.add(status, BorderLayout.SOUTH);
-		setStatus("Esperando una acción.");
+		setStatus("Empiece creando o cargando una partida.");
 
 		setSize(MIN_WIDTH, MIN_HEIGHT);
 		setResizable(false);
 		setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		packAndCenter();
+		pack();
+		setLocationRelativeTo(null);
 	}
 
 	public final void setContent(AppContent content, boolean force) {
@@ -152,7 +156,7 @@ public class GameWindow extends JFrame implements ActionListener {
 		this.content = content;
 		add(content, BorderLayout.NORTH);
 		resetStatus();
-		packAndCenter();
+		pack();
 	}
 
 	public final void setContent(AppContent content) {
@@ -175,7 +179,25 @@ public class GameWindow extends JFrame implements ActionListener {
 		if (result == JOptionPane.OK_OPTION) {
 			int width = (int) widthSpinner.getValue();
 			int height = (int) heightSpinner.getValue();
-			BoardCreatorPanel content = new BoardCreatorPanel(this, new Board(width, height));
+			Board board = new Board(width, height);
+			BoardCreatorPanel content = new BoardCreatorPanel(this, board);
+			setContent(content);
+		}
+	}
+
+	private final SpinnerNumberModel raetselSpinnerModel = new SpinnerNumberModel(1, 1, 600, 1);
+
+	public final void raetsel() throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
+		JSpinner raetselSpinner = new JSpinner(raetselSpinnerModel);
+
+		final JComponent[] inputs = new JComponent[] { new JLabel("ID:"), raetselSpinner };
+
+		int result = JOptionPane.showConfirmDialog(this, inputs, "Cargar tablero de Raetsel",
+				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+		if (result == JOptionPane.OK_OPTION) {
+			Board board = Board.createFromRaetsel((int) raetselSpinner.getValue());
+			GamePanel content = new GamePanel(this, new Game(board));
 			setContent(content);
 		}
 	}
@@ -198,11 +220,6 @@ public class GameWindow extends JFrame implements ActionListener {
 		}
 	}
 
-	public final void packAndCenter() {
-		pack();
-		this.setLocationRelativeTo(null);
-	}
-
 	public final void setStatus(String text) {
 		status.setText(text);
 		status.setToolTipText(text);
@@ -217,14 +234,18 @@ public class GameWindow extends JFrame implements ActionListener {
 	public final void actionPerformed(ActionEvent event) {
 		Object eventSource = event.getSource();
 
-		if (eventSource == newGameMenuItem) {
-
-		} else if (eventSource == createBoardMenuItem)
+		if (eventSource == createBoardMenuItem)
 			try {
 				createNewBoard();
 			} catch (BoardTooSmallException e) {
 			}
-		else if (eventSource == loadGameMenuItem) {
+		else if (eventSource == raetselMenuItem) {
+			try {
+				raetsel();
+			} catch (BoardTooSmallException | IOException | CanNotAddGalaxyException e) {
+				setStatus("Datos del tablero corrupto.");
+			}
+		} else if (eventSource == loadGameMenuItem) {
 			try {
 				loadGame();
 			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {

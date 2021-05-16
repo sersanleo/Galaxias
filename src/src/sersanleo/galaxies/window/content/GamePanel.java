@@ -1,15 +1,21 @@
 package src.sersanleo.galaxies.window.content;
 
 import java.awt.Component;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import src.sersanleo.galaxies.AppConfig;
@@ -24,16 +30,27 @@ import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
 public class GamePanel extends AppContent implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
+
+	private static final DateTimeFormatter ELAPSED_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
+
 	public final Game game;
 
 	private final BoardView boardView;
 	private final JButton undoButton = new JButton("Deshacer");
+	private final JButton redoButton = new JButton("Rehacer");
+	private final JButton saveStateButton = new JButton("Guardar estado");
+	private final JButton loadStateButton = new JButton("Cargar estado");
 	private final JButton saveButton = new JButton("Guardar partida");
+
+	private final JPanel infoPanel = new JPanel();
+	private final JLabel timeLabel = new JLabel();
+	private final JLabel movesLabel = new JLabel();
+
+	private final Timer timer;
 
 	public GamePanel(GameWindow window, Game game) {
 		super(window);
 		this.game = game;
-		game.solution.addSolutionFoundListener(this);
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -44,25 +61,80 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		boardView.addMouseMotionListener(mouseListener);
 		add(boardView);
 
+		updateUndoRedoButtons();
 		undoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		updateUndoButton();
 		undoButton.addActionListener(this);
 		add(undoButton);
+
+		redoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		redoButton.addActionListener(this);
+		add(redoButton);
+
+		saveStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		saveStateButton.addActionListener(this);
+		add(saveStateButton);
+
+		updateLoadStateButton();
+		loadStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		loadStateButton.addActionListener(this);
+		add(loadStateButton);
 
 		saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		saveButton.addActionListener(this);
 		add(saveButton);
 
+		infoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		infoPanel.setLayout(new GridLayout(0, 2));
+		add(infoPanel);
+
+		updateMovesLabel();
+		infoPanel.add(movesLabel);
+
+		updateTimeLabel();
+		timer = new Timer(10, new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateTimeLabel();
+			}
+		});
+		infoPanel.add(timeLabel);
+
 		window.config.addAppConfigChangeListener(this);
+		game.solution.addSolutionFoundListener(this);
+
+		timer.start();
 	}
 
-	public final void updateUndoButton() {
+	public final void updateLoadStateButton() {
+		loadStateButton.setEnabled(game.hasSavedState());
+	}
+
+	public final void updateUndoRedoButtons() {
 		undoButton.setEnabled(game.canUndo());
+		redoButton.setEnabled(game.canRedo());
+	}
+
+	public final void updateMovesLabel() {
+		movesLabel.setText("Movimientos: " + game.solution.getMoves());
+	}
+
+	public final void updateTimeLabel() {
+		LocalTime time = LocalTime.ofSecondOfDay(game.elapsedSeconds());
+		timeLabel.setText("Tiempo: " + time.format(ELAPSED_TIME_FORMATTER));
 	}
 
 	private final void undo() {
 		if (game.undo()) {
-			updateUndoButton();
+			updateUndoRedoButtons();
+			updateMovesLabel();
+			repaint();
+		}
+	}
+
+	private final void redo() {
+		if (game.redo()) {
+			updateUndoRedoButtons();
+			updateMovesLabel();
 			repaint();
 		}
 	}
@@ -98,7 +170,17 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		if (eventSource == undoButton)
 			undo();
-		else if (eventSource == saveButton)
+		else if (eventSource == redoButton)
+			redo();
+		else if (eventSource == saveStateButton) {
+			game.saveState();
+			updateLoadStateButton();
+		} else if (eventSource == loadStateButton) {
+			game.loadState();
+			updateLoadStateButton();
+			updateMovesLabel();
+			boardView.repaint();
+		} else if (eventSource == saveButton)
 			try {
 				save();
 			} catch (IOException e) {
@@ -115,7 +197,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	public void appConfigChange(AppConfig config, ConfigParameter parameter) {
 		if (parameter == ConfigParameter.BOARD_SCALE) {
 			boardView.setScale(config.getBoardScale());
-			window.packAndCenter();
+			window.pack();
 		}
 	}
 
@@ -132,5 +214,6 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	@Override
 	public void release() {
 		window.config.removeAppConfigChangeListener(this);
+		timer.stop();
 	}
 }

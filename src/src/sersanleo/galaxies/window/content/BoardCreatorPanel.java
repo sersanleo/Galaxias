@@ -64,7 +64,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	public void appConfigChange(AppConfig config, ConfigParameter parameter) {
 		if (parameter == ConfigParameter.BOARD_SCALE) {
 			boardView.setScale(config.getBoardScale());
-			window.packAndCenter();
+			window.pack();
 		}
 	}
 

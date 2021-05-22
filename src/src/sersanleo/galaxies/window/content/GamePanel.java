@@ -212,6 +212,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	public void solutionFound() {
 		timer.stop();
 		updateTimeLabel();
+		undoButton.setEnabled(false);
 		loadStateButton.setEnabled(false);
 		saveStateButton.setEnabled(false);
 		nextStepButton.setEnabled(false);

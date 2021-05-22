@@ -47,9 +47,13 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	private final void play() {
 		// TODO: Usar solucionador para ver si se puede empezar o no
 
-		Game game = new Game(board, new Solution(board));
-		GamePanel newContent = new GamePanel(window, game);
-		window.setContent(newContent, true);
+		if (board.getGalaxies().size() == 0)
+			window.setStatus("El tablero está vacío.");
+		else {
+			Game game = new Game(board, new Solution(board));
+			GamePanel newContent = new GamePanel(window, game);
+			window.setContent(newContent, true);
+		}
 	}
 
 	@Override

@@ -2,11 +2,15 @@ package src.sersanleo.galaxies.game;
 
 import java.awt.Color;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
+import src.sersanleo.galaxies.game.Movement.EdgeType;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.util.ExtFileInputStream;
@@ -27,7 +31,7 @@ public final class Solution {
 	// Listeners
 	private final Set<SolutionFoundListener> solutionFoundListeners = new LinkedHashSet<SolutionFoundListener>();
 
-	private Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges, int moves) {
+	public Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges, int moves) {
 		this.board = board;
 
 		this.horizontalEdges = horizontalEdges;
@@ -36,6 +40,10 @@ public final class Solution {
 
 		this.cells = new CellState[board.width][board.height];
 		updateCells();
+	}
+
+	public Solution(Board board, boolean[][] horizontalEdges, boolean[][] verticalEdges) {
+		this(board, horizontalEdges, verticalEdges, 0);
 	}
 
 	public Solution(Board board) {
@@ -258,6 +266,43 @@ public final class Solution {
 				stream.writeBoolean(verticalEdges[x][y]);
 
 		stream.writeInt(moves);
+	}
+
+	public final Movement getNextStep(Solution realSolution) {
+		List<Movement> movements = new ArrayList<Movement>();
+		boolean errorMode = false;
+
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++) {
+				boolean edge = horizontalEdges[x][y];
+
+				if (edge != realSolution.horizontalEdges[x][y]) {
+					if (edge && !errorMode) {
+						errorMode = true;
+						movements.clear();
+					}
+					if (!errorMode || edge)
+						movements.add(new Movement(x, y, EdgeType.HORIZONTAL));
+				}
+			}
+
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++) {
+				boolean edge = verticalEdges[x][y];
+
+				if (edge != realSolution.verticalEdges[x][y]) {
+					if (edge && !errorMode) {
+						errorMode = true;
+						movements.clear();
+					}
+					if (!errorMode || edge)
+						movements.add(new Movement(x, y, EdgeType.VERTICAL));
+				}
+			}
+
+		if (movements.size() > 0)
+			return movements.get(new Random().nextInt(movements.size()));
+		return null;
 	}
 
 	public final static Solution createFromStream(Board board, ExtFileInputStream stream)

@@ -14,7 +14,8 @@ import src.sersanleo.galaxies.util.ExtFileInputStream;
 import src.sersanleo.galaxies.util.ExtFileOutputStream;
 
 public class Game implements SolutionFoundListener {
-	private static final int MAX_UNDO = 10;
+	private static final int MAX_UNDO = 20;
+	private static final long NEXT_STEP_PENALTY = 15;
 
 	public final Board board;
 	public final Solution solution;
@@ -25,7 +26,7 @@ public class Game implements SolutionFoundListener {
 	private LinkedList<Movement> undoHistory = new LinkedList<Movement>();
 	private LinkedList<Movement> redoHistory = new LinkedList<Movement>();
 	private final LocalDateTime start;
-	private boolean isSaved = true;
+	private boolean isSaved = false;
 
 	public Game(Board board, Solution solution, Solution savedState, long elapsedSeconds) {
 		this.board = board;
@@ -46,6 +47,14 @@ public class Game implements SolutionFoundListener {
 		this(board, new Solution(board));
 	}
 
+	public final void nextStep() {
+		Movement nextStep = solution.getNextStep(board.solution);
+		if (nextStep != null) {
+			nextStep.apply(this, false, false);
+			elapsedSeconds += NEXT_STEP_PENALTY;
+		}
+	}
+
 	public final boolean hasSavedState() {
 		return savedState != null;
 	}
@@ -58,7 +67,8 @@ public class Game implements SolutionFoundListener {
 
 	public final void loadState() {
 		solution.set(savedState);
-		savedState = null;
+		undoHistory.clear();
+		redoHistory.clear();
 		isSaved = false;
 	}
 
@@ -66,8 +76,14 @@ public class Game implements SolutionFoundListener {
 		return isSaved;
 	}
 
-	public final long elapsedSeconds() {
+	public final long elapsedSeconds(boolean solved) {
+		if (solved)
+			return elapsedSeconds;
 		return elapsedSeconds + Math.max(0, ChronoUnit.SECONDS.between(start, LocalDateTime.now()));
+	}
+
+	public final long elapsedSeconds() {
+		return elapsedSeconds(solution.isSolved());
 	}
 
 	private final void addMovement(Movement movement, boolean redoing) {
@@ -135,7 +151,7 @@ public class Game implements SolutionFoundListener {
 
 	@Override
 	public void solutionFound() {
-		elapsedSeconds = elapsedSeconds();
+		elapsedSeconds = elapsedSeconds(false);
 	}
 
 	public final void write(ExtFileOutputStream stream) throws IOException {

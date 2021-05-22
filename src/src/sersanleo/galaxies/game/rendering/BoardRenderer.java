@@ -5,6 +5,14 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+import javax.imageio.IIOImage;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+
 import java.awt.geom.Ellipse2D;
 
 import src.sersanleo.galaxies.game.Board;
@@ -21,7 +29,7 @@ public class BoardRenderer {
 	private static final float SELECTED_EDGE_WIDTH = EDGE_WIDTH + 2 * SELECTED_EDGE_WIDTH_ADD;
 	private static final float SELECTED_EDGE_LENGTH = CELL_SIZE + 2 * (EDGE_WIDTH + SELECTED_EDGE_WIDTH_ADD);
 	private static final float FULL_CELL_SIZE = CELL_SIZE + EDGE_WIDTH;
-	
+
 	// Colores
 	private static final Color EDGE_COLOR = Color.GRAY;
 	private static final Color SELECTED_EDGE_COLOR = Color.BLACK;
@@ -201,5 +209,34 @@ public class BoardRenderer {
 
 	public final int getHeight() {
 		return height;
+	}
+
+	public void save() {
+		this.save("C:\\Users\\Sergio\\Desktop\\" + board.hashCode() + ".jpg");
+	}
+
+	public final void save(String path) {
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = img.createGraphics();
+		paint(g);
+		g.dispose();
+
+		ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+		ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
+		jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+		jpgWriteParam.setCompressionQuality(1f);
+
+		File file = new File(path);
+		File directories = new File(file.getParent());
+		if (!directories.exists())
+			directories.mkdirs();
+		try {
+			jpgWriter.setOutput(ImageIO.createImageOutputStream(file));
+			IIOImage outputImage = new IIOImage(img, null, null);
+			jpgWriter.write(null, outputImage, jpgWriteParam);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		jpgWriter.dispose();
 	}
 }

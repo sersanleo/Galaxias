@@ -41,6 +41,8 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	private final JButton saveStateButton = new JButton("Guardar estado");
 	private final JButton loadStateButton = new JButton("Cargar estado");
 	private final JButton saveButton = new JButton("Guardar partida");
+	private final JButton nextStepButton = new JButton("Siguiente paso");
+	private final JButton fotoButton = new JButton("Foto");
 
 	private final JPanel infoPanel = new JPanel();
 	private final JLabel timeLabel = new JLabel();
@@ -83,6 +85,17 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveButton.addActionListener(this);
 		add(saveButton);
 
+		nextStepButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		nextStepButton.addActionListener(this);
+		nextStepButton.setEnabled(game.board.solution != null);
+		add(nextStepButton);
+
+		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		fotoButton.addActionListener(this);
+		fotoButton.setVisible(false);
+		add(fotoButton);
+
+		// Info
 		infoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		infoPanel.setLayout(new GridLayout(0, 2));
 		add(infoPanel);
@@ -178,6 +191,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		} else if (eventSource == loadStateButton) {
 			game.loadState();
 			updateLoadStateButton();
+			updateUndoRedoButtons();
 			updateMovesLabel();
 			boardView.repaint();
 		} else if (eventSource == saveButton)
@@ -186,11 +200,22 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		else if (eventSource == nextStepButton) {
+			game.nextStep();
+			boardView.repaint();
+		} else if (eventSource == fotoButton) {
+			boardView.renderer.save();
+		}
 	}
 
 	@Override
 	public void solutionFound() {
-
+		timer.stop();
+		updateTimeLabel();
+		loadStateButton.setEnabled(false);
+		saveStateButton.setEnabled(false);
+		nextStepButton.setEnabled(false);
+		saveButton.setEnabled(false);
 	}
 
 	@Override

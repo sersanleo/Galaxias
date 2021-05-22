@@ -35,4 +35,9 @@ public class GameRenderer extends BoardRenderer {
 			return WIN_COLOR;
 		return game.solution.cell(x, y).color;
 	}
+
+	@Override
+	public void save() {
+		this.save("C:\\Users\\Sergio\\Desktop\\" + board.hashCode() + "" + game.elapsedSeconds() + ".jpg");
+	}
 }

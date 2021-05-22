@@ -21,7 +21,7 @@ public class Board extends BoundingBoxi {
 	public final int area;
 
 	private final Set<Galaxy> galaxies = new HashSet<Galaxy>();
-	public final Solution solution;
+	public Solution solution;
 
 	public Board(int width, int height) throws BoardTooSmallException {
 		super(0, width - 1, 0, height - 1);
@@ -31,7 +31,6 @@ public class Board extends BoundingBoxi {
 		this.width = width;
 		this.height = height;
 		this.area = width * height;
-		this.solution = new Solution(this);
 	}
 
 	public final void addGalaxy(Galaxy galaxy) throws CanNotAddGalaxyException {
@@ -68,7 +67,9 @@ public class Board extends BoundingBoxi {
 			stream.writeFloat(galaxy.y);
 		}
 
-		solution.write(stream);
+		stream.writeBoolean(solution != null);
+		if (solution != null)
+			solution.write(stream);
 	}
 
 	public final static Board createFromStream(ExtFileInputStream stream)
@@ -79,12 +80,14 @@ public class Board extends BoundingBoxi {
 		while (galaxiesLeft-- > 0)
 			board.addGalaxy(stream.readFloat(), stream.readFloat());
 
-		board.solution.set(Solution.createFromStream(board, stream));
+		if (stream.readBoolean())
+			board.solution.set(Solution.createFromStream(board, stream));
 
 		return board;
 	}
 
-	public final static Board createFromRaetsel(int id) throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+	public final static Board createFromRaetsel(int id)
+			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
 		String codigo = WebUtil
 				.getURLSource("https://www.janko.at/Raetsel/Galaxien/" + String.format("%03d", id) + ".a.htm");
 		String map = codigo.split("problem\r\n")[1].split("\r\nsolution")[0].trim();
@@ -112,7 +115,25 @@ public class Board extends BoundingBoxi {
 					break;
 				}
 			}
-		
+
+		String mapi = codigo.split("solution\r\n")[1].split("\r\nmoves")[0].trim();
+		String[] spi = mapi.split("\r\n");
+
+		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
+		boolean[][] verticalEdges = new boolean[board.width - 1][board.height];
+
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				if (!spi[y].split(" ")[x].equals(spi[y + 1].split(" ")[x]))
+					horizontalEdges[x][y] = true;
+
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				if (!spi[y].split(" ")[x].equals(spi[y].split(" ")[x + 1]))
+					verticalEdges[x][y] = true;
+
+		board.solution = new Solution(board, horizontalEdges, verticalEdges);
+
 		return board;
 	}
 

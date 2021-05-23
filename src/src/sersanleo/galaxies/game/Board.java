@@ -81,7 +81,7 @@ public class Board extends BoundingBoxi {
 			board.addGalaxy(stream.readFloat(), stream.readFloat());
 
 		if (stream.readBoolean())
-			board.solution.set(Solution.createFromStream(board, stream));
+			board.solution = Solution.createFromStream(board, stream);
 
 		return board;
 	}

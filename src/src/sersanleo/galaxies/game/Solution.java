@@ -305,6 +305,34 @@ public final class Solution {
 		return null;
 	}
 
+	public final int[] compare(Solution realSolution) {
+		int[] res = new int[2];
+
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++) {
+				boolean edge = horizontalEdges[x][y];
+
+				if (edge != realSolution.horizontalEdges[x][y])
+					if (edge)
+						res[0]++;
+					else
+						res[1]++;
+			}
+
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++) {
+				boolean edge = verticalEdges[x][y];
+
+				if (edge != realSolution.verticalEdges[x][y])
+					if (edge)
+						res[0]++;
+					else
+						res[1]++;
+			}
+
+		return res;
+	}
+
 	public final static Solution createFromStream(Board board, ExtFileInputStream stream)
 			throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
 		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];

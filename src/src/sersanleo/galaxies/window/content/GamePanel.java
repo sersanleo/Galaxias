@@ -41,6 +41,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	private final JButton saveStateButton = new JButton("Guardar estado");
 	private final JButton loadStateButton = new JButton("Cargar estado");
 	private final JButton saveButton = new JButton("Guardar partida");
+	private final JButton checkButton = new JButton("Comprobar partida");
 	private final JButton nextStepButton = new JButton("Siguiente paso");
 	private final JButton fotoButton = new JButton("Foto");
 
@@ -84,6 +85,11 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		saveButton.addActionListener(this);
 		add(saveButton);
+
+		checkButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		checkButton.addActionListener(this);
+		checkButton.setEnabled(game.board.solution != null);
+		add(checkButton);
 
 		nextStepButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		nextStepButton.addActionListener(this);
@@ -205,6 +211,10 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 			boardView.repaint();
 		} else if (eventSource == fotoButton) {
 			boardView.renderer.save();
+		} else if (eventSource == checkButton) {
+			int[] checkResult = game.check();
+			JOptionPane.showMessageDialog(this, "Hay " + checkResult[0] + " fallos actualmente.\nFaltan "
+					+ checkResult[1] + " aristas por colocar.");
 		}
 	}
 
@@ -217,6 +227,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveStateButton.setEnabled(false);
 		nextStepButton.setEnabled(false);
 		saveButton.setEnabled(false);
+		checkButton.setEnabled(false);
 	}
 
 	@Override

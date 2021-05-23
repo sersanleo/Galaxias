@@ -16,6 +16,7 @@ import src.sersanleo.galaxies.util.ExtFileOutputStream;
 public class Game implements SolutionFoundListener {
 	private static final int MAX_UNDO = 20;
 	private static final long NEXT_STEP_PENALTY = 15;
+	private static final long CHECK_PENALTY = 10;
 
 	public final Board board;
 	public final Solution solution;
@@ -53,6 +54,11 @@ public class Game implements SolutionFoundListener {
 			nextStep.apply(this, false, false);
 			elapsedSeconds += NEXT_STEP_PENALTY;
 		}
+	}
+
+	public final int[] check() {
+		elapsedSeconds += CHECK_PENALTY;
+		return solution.compare(board.solution);
 	}
 
 	public final boolean hasSavedState() {

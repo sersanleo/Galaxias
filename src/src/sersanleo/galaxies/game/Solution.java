@@ -24,7 +24,7 @@ public final class Solution {
 	private final boolean[][] verticalEdges;
 	private int moves;
 
-	private CellState[][] cells;
+	private SolutionCell[][] cells;
 
 	private boolean solved = false;
 
@@ -38,7 +38,7 @@ public final class Solution {
 		this.verticalEdges = verticalEdges;
 		this.moves = moves;
 
-		this.cells = new CellState[board.width][board.height];
+		this.cells = new SolutionCell[board.width][board.height];
 		updateCells();
 	}
 
@@ -82,7 +82,7 @@ public final class Solution {
 	private final void resetCells() {
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++)
-				cells[x][y] = CellState.NON_SOLVED;
+				cells[x][y] = new SolutionCell();
 	}
 
 	private final Set<Vector2i> getNeighbors(int x, int y) {
@@ -123,14 +123,17 @@ public final class Solution {
 	}
 
 	public final boolean horizontalEdge(int x, int y) {
-		return horizontalEdges[x][y];
+		if (x >= 0 && x < board.width && y >= 0 && y < board.height - 1)
+			return horizontalEdges[x][y];
+		else
+			return true;
 	}
 
 	public final boolean isSolved() {
 		return solved;
 	}
 
-	public final CellState cell(int x, int y) {
+	public final SolutionCell cell(int x, int y) {
 		return cells[x][y];
 	}
 
@@ -151,7 +154,13 @@ public final class Solution {
 		else
 			moves++;
 
-		updateCells();
+		boolean leftEnd = horizontalEdge(x - 1, y) || verticalEdge(x - 1, y) || verticalEdge(x - 1, y + 1);
+		boolean rightEnd = horizontalEdge(x + 1, y) || verticalEdge(x, y) || verticalEdge(x, y + 1);
+		boolean unsolvedCells = cells[x][y].state == CellState.NON_SOLVED
+				&& cells[x][y + 1].state == CellState.NON_SOLVED;
+		if ((leftEnd && rightEnd) || !unsolvedCells)
+			updateCells();
+
 		return true;
 	}
 
@@ -172,7 +181,13 @@ public final class Solution {
 		else
 			moves++;
 
-		updateCells();
+		boolean topEnd = verticalEdge(x, y - 1) || horizontalEdge(x, y - 1) || horizontalEdge(x + 1, y - 1);
+		boolean bottomEnd = verticalEdge(x, y + 1) || horizontalEdge(x, y) || horizontalEdge(x + 1, y);
+		boolean unsolvedCells = cells[x][y].state == CellState.NON_SOLVED
+				&& cells[x + 1][y].state == CellState.NON_SOLVED;
+		if ((topEnd && bottomEnd) || !unsolvedCells)
+			updateCells();
+
 		return true;
 	}
 
@@ -228,13 +243,11 @@ public final class Solution {
 					state = CellState.SOLVED_PARTIALLY;
 			}
 
-			if (state != CellState.NON_SOLVED) {
-				if (state == CellState.SOLVED)
-					solvedCells += galaxyCells.size();
+			if (state == CellState.SOLVED)
+				solvedCells += galaxyCells.size();
 
-				for (Vector2i cell : galaxyCells)
-					this.cells[cell.x][cell.y] = state;
-			}
+			for (Vector2i cell : galaxyCells)
+				this.cells[cell.x][cell.y].set(galaxy, state);
 		}
 
 		this.solved = solvedCells == board.area;
@@ -243,17 +256,10 @@ public final class Solution {
 	}
 
 	public final boolean verticalEdge(int x, int y) {
-		return verticalEdges[x][y];
-	}
-
-	public static enum CellState {
-		NON_SOLVED(Color.WHITE), SOLVED(Color.LIGHT_GRAY), SOLVED_PARTIALLY(new Color(207, 175, 175));
-
-		public final Color color;
-
-		CellState(Color color) {
-			this.color = color;
-		}
+		if (x >= 0 && x < board.width - 1 && y >= 0 && y < board.height)
+			return verticalEdges[x][y];
+		else
+			return true;
 	}
 
 	public final void write(ExtFileOutputStream stream) throws IOException {
@@ -357,5 +363,37 @@ public final class Solution {
 
 	public final int getMoves() {
 		return moves;
+	}
+
+	public static enum CellState {
+		NON_SOLVED(Color.WHITE), SOLVED(Color.LIGHT_GRAY), SOLVED_PARTIALLY(new Color(207, 175, 175));
+
+		public final Color color;
+
+		CellState(Color color) {
+			this.color = color;
+		}
+	}
+
+	public static class SolutionCell {
+		public Galaxy galaxy;
+		public CellState state;
+
+		private SolutionCell(Galaxy galaxy, CellState state) {
+			this.galaxy = galaxy;
+			this.state = state;
+		}
+
+		private SolutionCell() {
+			this(null, CellState.NON_SOLVED);
+		}
+
+		public final void set(Galaxy galaxy, CellState state) {
+			if (state == CellState.NON_SOLVED)
+				this.galaxy = null;
+			else
+				this.galaxy = galaxy;
+			this.state = state;
+		}
 	}
 }

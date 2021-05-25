@@ -24,6 +24,7 @@ import javax.swing.JSeparator;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -143,7 +144,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setResizable(false);
 		setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 		addWindowListener(this);
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		pack();
 		setLocationRelativeTo(null);
 	}
@@ -159,6 +160,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		this.content = content;
 		add(content, BorderLayout.NORTH);
 		resetStatus();
+		content.added();
 		pack();
 	}
 
@@ -206,7 +208,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	}
 
 	private final void loadGame() throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
-		JFileChooser fileChooser = new JFileChooser();
+		JFileChooser fileChooser = new JFileChooser(".");
 		fileChooser.setDialogTitle("Cargar partida");
 		FileNameExtensionFilter tsb = new FileNameExtensionFilter("Partida de galaxias (." + Board.FILE_EXT + ")",
 				Board.FILE_EXT);

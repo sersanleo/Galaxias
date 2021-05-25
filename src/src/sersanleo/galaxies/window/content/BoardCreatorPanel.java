@@ -24,7 +24,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	public final Board board;
 
 	private final BoardView boardView;
-	private final JButton playButton = new JButton("Comenzar partida");
+	private final JButton playButton = new JButton(icon("play"));
 
 	public BoardCreatorPanel(GameWindow window, Board board) {
 		super(window);
@@ -37,6 +37,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 		boardView.addMouseListener(new BoardMouseListener(board, boardView, window));
 		add(boardView);
 
+		playButton.setToolTipText("Comprobar validez y jugar");
 		playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		playButton.addActionListener(this);
 		add(playButton);
@@ -65,7 +66,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	}
 
 	@Override
-	public void appConfigChange(AppConfig config, ConfigParameter parameter) {
+	public final void appConfigChange(AppConfig config, ConfigParameter parameter) {
 		if (parameter == ConfigParameter.BOARD_SCALE) {
 			boardView.setScale(config.getBoardScale());
 			window.pack();
@@ -73,14 +74,19 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	}
 
 	@Override
-	public void release() {
+	public final void release() {
 		window.config.removeAppConfigChangeListener(this);
 	}
 
 	@Override
-	public boolean canBeRemoved() {
+	public final boolean canBeRemoved() {
 		return JOptionPane.showConfirmDialog(this,
 				"Estás a punto de salir sin guardar el tablero, ¿desea salir igualmente?", "¿Salir?",
 				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+	}
+	
+	@Override
+	public final void added() {
+		window.setStatus("Añada galaxias sobre la cuadrícula.");
 	}
 }

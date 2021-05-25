@@ -33,7 +33,7 @@ public class GameRenderer extends BoardRenderer {
 	protected Color getCellColor(int x, int y) {
 		if (game.solution.isSolved())
 			return WIN_COLOR;
-		return game.solution.cell(x, y).color;
+		return game.solution.cell(x, y).state.color;
 	}
 
 	@Override

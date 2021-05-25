@@ -6,9 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -31,18 +28,19 @@ import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 public class GamePanel extends AppContent implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
 
-	private static final DateTimeFormatter ELAPSED_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
-
 	public final Game game;
 
 	private final BoardView boardView;
-	private final JButton undoButton = new JButton("Deshacer");
-	private final JButton redoButton = new JButton("Rehacer");
-	private final JButton saveStateButton = new JButton("Guardar estado");
-	private final JButton loadStateButton = new JButton("Cargar estado");
-	private final JButton saveButton = new JButton("Guardar partida");
-	private final JButton checkButton = new JButton("Comprobar partida");
-	private final JButton nextStepButton = new JButton("Siguiente paso");
+
+	private final JPanel buttonPanel = new JPanel();
+	private final JButton saveAsButton = new JButton(icon("saveAs"));
+	private final JButton saveButton = new JButton(icon("save"));
+	private final JButton undoButton = new JButton(icon("undo"));
+	private final JButton redoButton = new JButton(icon("redo"));
+	private final JButton loadStateButton = new JButton(icon("loadState"));
+	private final JButton saveStateButton = new JButton(icon("saveState"));
+	private final JButton nextStepButton = new JButton(icon("nextStep"));
+	private final JButton checkButton = new JButton(icon("check"));
 	private final JButton fotoButton = new JButton("Foto");
 
 	private final JPanel infoPanel = new JPanel();
@@ -57,49 +55,68 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+		// Button panel
+		buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+		add(buttonPanel);
+
+		saveAsButton.setToolTipText("Guardar partida como...");
+		saveAsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		saveAsButton.addActionListener(this);
+		buttonPanel.add(saveAsButton);
+
+		saveButton.setToolTipText("Guardar partida");
+		saveButton.setEnabled(game.saveFile != null);
+		saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		saveButton.addActionListener(this);
+		buttonPanel.add(saveButton);
+
+		updateUndoRedoButtons();
+		undoButton.setToolTipText("Deshacer");
+		undoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		undoButton.addActionListener(this);
+		buttonPanel.add(undoButton);
+
+		redoButton.setToolTipText("Rehacer");
+		redoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		redoButton.addActionListener(this);
+		buttonPanel.add(redoButton);
+
+		loadStateButton.setToolTipText("Cargar estado guardado");
+		loadStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		updateLoadStateButton();
+		loadStateButton.addActionListener(this);
+		buttonPanel.add(loadStateButton);
+
+		saveStateButton.setToolTipText("Guardar estado actual");
+		saveStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		saveStateButton.addActionListener(this);
+		buttonPanel.add(saveStateButton);
+
+		nextStepButton.setToolTipText("Realizar siguiente movimiento");
+		nextStepButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		nextStepButton.addActionListener(this);
+		nextStepButton.setEnabled(game.board.solution != null);
+		buttonPanel.add(nextStepButton);
+
+		checkButton.setToolTipText("Comprobar partida");
+		checkButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		checkButton.addActionListener(this);
+		checkButton.setEnabled(game.board.solution != null);
+		buttonPanel.add(checkButton);
+
+		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		fotoButton.addActionListener(this);
+		fotoButton.setVisible(false);
+		buttonPanel.add(fotoButton);
+
+		// Board
 		boardView = new BoardView(game, window.config.getBoardScale());
 		boardView.setAlignmentX(Component.CENTER_ALIGNMENT);
 		GameMouseListener mouseListener = new GameMouseListener(game, this, boardView);
 		boardView.addMouseListener(mouseListener);
 		boardView.addMouseMotionListener(mouseListener);
 		add(boardView);
-
-		updateUndoRedoButtons();
-		undoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		undoButton.addActionListener(this);
-		add(undoButton);
-
-		redoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		redoButton.addActionListener(this);
-		add(redoButton);
-
-		saveStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		saveStateButton.addActionListener(this);
-		add(saveStateButton);
-
-		updateLoadStateButton();
-		loadStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		loadStateButton.addActionListener(this);
-		add(loadStateButton);
-
-		saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		saveButton.addActionListener(this);
-		add(saveButton);
-
-		checkButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		checkButton.addActionListener(this);
-		checkButton.setEnabled(game.board.solution != null);
-		add(checkButton);
-
-		nextStepButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		nextStepButton.addActionListener(this);
-		nextStepButton.setEnabled(game.board.solution != null);
-		add(nextStepButton);
-
-		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		fotoButton.addActionListener(this);
-		fotoButton.setVisible(false);
-		add(fotoButton);
 
 		// Info
 		infoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -138,8 +155,12 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	}
 
 	public final void updateTimeLabel() {
-		LocalTime time = LocalTime.ofSecondOfDay(game.elapsedSeconds());
-		timeLabel.setText("Tiempo: " + time.format(ELAPSED_TIME_FORMATTER));
+		long elapsedSeconds = game.elapsedSeconds();
+		int seconds = (int) (elapsedSeconds % 60);
+		int minutes = (int) (elapsedSeconds / 60) % 60;
+		int hours = (int) (elapsedSeconds / 3600);
+		timeLabel.setText(
+				"Tiempo: " + hours + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
 	}
 
 	private final void undo() {
@@ -158,7 +179,44 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		}
 	}
 
-	private final void save() throws IOException {
+	private final void saveState() {
+		game.saveState();
+		updateLoadStateButton();
+	}
+
+	private final void loadState() {
+		game.loadState();
+		updateLoadStateButton();
+		updateUndoRedoButtons();
+		updateMovesLabel();
+		boardView.repaint();
+	}
+
+	private final void nextStep() {
+		game.nextStep();
+		updateUndoRedoButtons();
+		boardView.repaint();
+	}
+
+	private final void save(File file) {
+		try {
+			String fileName = file.getName();
+			if (!fileName.endsWith("." + Board.FILE_EXT))
+				file = new File(file.getParent() + "/" + file.getName() + "." + Board.FILE_EXT);
+
+			if (!file.exists())
+				file.createNewFile();
+
+			game.save(file);
+			game.saveFile = file;
+			saveButton.setEnabled(true);
+		} catch (IOException e) {
+			JOptionPane.showMessageDialog(this, "No se puede guardar la partida", "Error", JOptionPane.ERROR_MESSAGE);
+			e.printStackTrace();
+		}
+	}
+
+	private final void save() {
 		JFileChooser fileChooser = new JFileChooser(".");
 		fileChooser.setDialogTitle("Guardar partida");
 		FileNameExtensionFilter tsb = new FileNameExtensionFilter("Partida de galaxias (." + Board.FILE_EXT + ")",
@@ -169,18 +227,27 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		int userSelection = fileChooser.showSaveDialog(this);
 
-		if (userSelection == JFileChooser.APPROVE_OPTION) {
-			File file = fileChooser.getSelectedFile();
+		if (userSelection == JFileChooser.APPROVE_OPTION)
+			save(fileChooser.getSelectedFile());
+	}
 
-			String fileName = file.getName();
-			if (!fileName.endsWith("." + Board.FILE_EXT))
-				file = new File(file.getParent() + "/" + file.getName() + "." + Board.FILE_EXT);
-
-			if (!file.exists())
-				file.createNewFile();
-
-			game.save(file);
-		}
+	private final void check() {
+		int[] checkResult = game.check();
+		StringBuilder sb = new StringBuilder("Hay ");
+		sb.append(checkResult[0]);
+		sb.append(" fallo");
+		if (checkResult[0] != 1)
+			sb.append("s");
+		sb.append(" actualmente.\nFalta");
+		if (checkResult[1] != 1)
+			sb.append("n");
+		sb.append(" ");
+		sb.append(checkResult[1]);
+		sb.append(" arista");
+		if (checkResult[1] != 1)
+			sb.append("s");
+		sb.append(" por colocar.");
+		JOptionPane.showMessageDialog(this, sb.toString(), "Estado de la partida", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	@Override
@@ -191,31 +258,20 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 			undo();
 		else if (eventSource == redoButton)
 			redo();
-		else if (eventSource == saveStateButton) {
-			game.saveState();
-			updateLoadStateButton();
-		} else if (eventSource == loadStateButton) {
-			game.loadState();
-			updateLoadStateButton();
-			updateUndoRedoButtons();
-			updateMovesLabel();
-			boardView.repaint();
-		} else if (eventSource == saveButton)
-			try {
-				save();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		else if (eventSource == nextStepButton) {
-			game.nextStep();
-			boardView.repaint();
-		} else if (eventSource == fotoButton) {
+		else if (eventSource == saveStateButton)
+			saveState();
+		else if (eventSource == loadStateButton)
+			loadState();
+		else if (eventSource == saveButton)
+			save(game.saveFile);
+		else if (eventSource == saveAsButton)
+			save();
+		else if (eventSource == nextStepButton)
+			nextStep();
+		else if (eventSource == fotoButton)
 			boardView.renderer.save();
-		} else if (eventSource == checkButton) {
-			int[] checkResult = game.check();
-			JOptionPane.showMessageDialog(this, "Hay " + checkResult[0] + " fallos actualmente.\nFaltan "
-					+ checkResult[1] + " aristas por colocar.");
-		}
+		else if (eventSource == checkButton)
+			check();
 	}
 
 	@Override
@@ -223,10 +279,12 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		timer.stop();
 		updateTimeLabel();
 		undoButton.setEnabled(false);
+		redoButton.setEnabled(false);
 		loadStateButton.setEnabled(false);
 		saveStateButton.setEnabled(false);
 		nextStepButton.setEnabled(false);
 		saveButton.setEnabled(false);
+		saveAsButton.setEnabled(false);
 		checkButton.setEnabled(false);
 	}
 
@@ -252,5 +310,10 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	public void release() {
 		window.config.removeAppConfigChangeListener(this);
 		timer.stop();
+	}
+
+	@Override
+	public final void added() {
+		game.restartTimer();
 	}
 }

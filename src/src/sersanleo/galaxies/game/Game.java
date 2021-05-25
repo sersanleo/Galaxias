@@ -18,15 +18,17 @@ public class Game implements SolutionFoundListener {
 	private static final long NEXT_STEP_PENALTY = 15;
 	private static final long CHECK_PENALTY = 10;
 
+	public File saveFile;
+
 	public final Board board;
 	public final Solution solution;
 	private Solution savedState;
-
 	private long elapsedSeconds;
 
 	private LinkedList<Movement> undoHistory = new LinkedList<Movement>();
 	private LinkedList<Movement> redoHistory = new LinkedList<Movement>();
-	private final LocalDateTime start;
+	private LocalDateTime start;
+
 	private boolean isSaved = false;
 
 	public Game(Board board, Solution solution, Solution savedState, long elapsedSeconds) {
@@ -36,8 +38,7 @@ public class Game implements SolutionFoundListener {
 		this.savedState = savedState;
 
 		this.elapsedSeconds = elapsedSeconds;
-
-		this.start = LocalDateTime.now();
+		restartTimer();
 	}
 
 	public Game(Board board, Solution solution) {
@@ -46,6 +47,10 @@ public class Game implements SolutionFoundListener {
 
 	public Game(Board board) {
 		this(board, new Solution(board));
+	}
+
+	public final void restartTimer() {
+		start = LocalDateTime.now();
 	}
 
 	public final void nextStep() {
@@ -182,21 +187,18 @@ public class Game implements SolutionFoundListener {
 		isSaved = true;
 	}
 
-	public final static Game createFromStream(ExtFileInputStream stream)
+	public final static Game createFromFile(File file)
 			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+		ExtFileInputStream stream = new ExtFileInputStream(file);
+
 		Board board = Board.createFromStream(stream);
 		Solution solution = Solution.createFromStream(board, stream);
 		Solution savedState = stream.readBoolean() ? Solution.createFromStream(board, stream) : null;
 
 		long elapsedSeconds = stream.readLong();
+		Game game = new Game(board, solution, savedState, elapsedSeconds);
+		game.saveFile = file;
 
-		return new Game(board, solution, savedState, elapsedSeconds);
-	}
-
-	public final static Game createFromFile(File file)
-			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
-		ExtFileInputStream stream = new ExtFileInputStream(file);
-		Game game = createFromStream(stream);
 		stream.close();
 		return game;
 	}

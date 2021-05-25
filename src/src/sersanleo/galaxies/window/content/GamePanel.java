@@ -34,14 +34,14 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	private final BoardView boardView;
 
 	private final JPanel buttonPanel = new JPanel();
-	private final JButton saveAsButton = new JButton(icon("saveAs"));
-	private final JButton saveButton = new JButton(icon("save"));
-	private final JButton undoButton = new JButton(icon("undo"));
-	private final JButton redoButton = new JButton(icon("redo"));
-	private final JButton loadStateButton = new JButton(icon("loadState"));
-	private final JButton saveStateButton = new JButton(icon("saveState"));
-	private final JButton nextStepButton = new JButton(icon("nextStep"));
-	private final JButton checkButton = new JButton(icon("check"));
+	private final JButton saveAsButton = new JButton(icon("saveAs.png"));
+	private final JButton saveButton = new JButton(icon("save.png"));
+	private final JButton undoButton = new JButton(icon("undo.png"));
+	private final JButton redoButton = new JButton(icon("redo.png"));
+	private final JButton loadStateButton = new JButton(icon("loadState.png"));
+	private final JButton saveStateButton = new JButton(icon("saveState.png"));
+	private final JButton nextStepButton = new JButton(icon("nextStep.png"));
+	private final JButton checkButton = new JButton(icon("check.png"));
 	private final JButton fotoButton = new JButton("Foto");
 
 	private final JPanel infoPanel = new JPanel();
@@ -57,6 +57,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
 		// Button panel
+		buttonPanel.setBorder(new EmptyBorder(0, 5, 5, 5));
 		buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 		add(buttonPanel);
@@ -108,7 +109,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		fotoButton.addActionListener(this);
-		fotoButton.setVisible(false);
+		// fotoButton.setVisible(false);
 		buttonPanel.add(fotoButton);
 
 		// Board
@@ -153,7 +154,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	}
 
 	public final void updateMovesLabel() {
-		movesLabel.setText("Movimientos: " + game.solution.getMoves());
+		movesLabel.setText("<html><b>Movimientos: </b>" + game.solution.getMoves());
 	}
 
 	public final void updateTimeLabel() {
@@ -161,8 +162,8 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		int seconds = (int) (elapsedSeconds % 60);
 		int minutes = (int) (elapsedSeconds / 60) % 60;
 		int hours = (int) (elapsedSeconds / 3600);
-		timeLabel.setText(
-				"Tiempo: " + hours + ":" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds));
+		timeLabel.setText("<html><b>Tiempo: </b>" + hours + ":" + String.format("%02d", minutes) + ":"
+				+ String.format("%02d", seconds) + "</html");
 	}
 
 	private final void undo() {
@@ -300,7 +301,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 	@Override
 	public boolean canBeRemoved() {
-		if (!game.isSaved())
+		if (!game.isSaved() && !game.solution.isSolved())
 			return JOptionPane.showConfirmDialog(this,
 					"Estás a punto de salir sin guardar la partida, ¿desea salir igualmente?", "¿Salir?",
 					JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;

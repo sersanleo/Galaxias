@@ -3,7 +3,6 @@ package src.sersanleo.galaxies.window.content;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
@@ -28,9 +27,9 @@ public abstract class AppContent extends JPanel {
 
 	}
 
-	protected static final Icon icon(String name) {
+	public static final ImageIcon icon(String name) {
 		try {
-			return new ImageIcon(ImageIO.read(AppContent.class.getResource("/icons/" + name + ".png")));
+			return new ImageIcon(ImageIO.read(AppContent.class.getResource("/icons/" + name)));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return new ImageIcon();

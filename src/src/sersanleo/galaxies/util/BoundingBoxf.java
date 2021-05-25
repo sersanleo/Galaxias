@@ -1,7 +1,5 @@
 package src.sersanleo.galaxies.util;
 
-import src.sersanleo.galaxies.util.Vector2f;
-
 public class BoundingBoxf extends BoundingBox {
 	private final float minX;
 	private final float maxX;

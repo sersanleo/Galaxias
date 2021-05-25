@@ -38,6 +38,6 @@ public class GameRenderer extends BoardRenderer {
 
 	@Override
 	public void save() {
-		this.save("C:\\Users\\Sergio\\Desktop\\" + board.hashCode() + "" + game.elapsedSeconds() + ".jpg");
+		this.save("F:\\Sergio\\Desktop\\" + board.hashCode() + "" + game.elapsedSeconds() + ".jpg");
 	}
 }

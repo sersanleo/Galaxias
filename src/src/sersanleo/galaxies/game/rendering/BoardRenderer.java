@@ -212,7 +212,7 @@ public class BoardRenderer {
 	}
 
 	public void save() {
-		this.save("C:\\Users\\Sergio\\Desktop\\" + board.hashCode() + ".jpg");
+		this.save("F:\\Sergio\\Desktop\\" + board.hashCode() + ".jpg");
 	}
 
 	public final void save(String path) {

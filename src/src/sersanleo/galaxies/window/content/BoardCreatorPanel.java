@@ -24,7 +24,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	public final Board board;
 
 	private final BoardView boardView;
-	private final JButton playButton = new JButton(icon("play"));
+	private final JButton playButton = new JButton(icon("play.png"));
 
 	public BoardCreatorPanel(GameWindow window, Board board) {
 		super(window);

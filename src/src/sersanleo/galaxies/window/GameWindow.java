@@ -152,6 +152,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 		setSize(MIN_WIDTH, MIN_HEIGHT);
 		setResizable(false);
+		setIconImage(AppContent.icon("icon.jpg").getImage());
 		setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 		addWindowListener(this);
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);

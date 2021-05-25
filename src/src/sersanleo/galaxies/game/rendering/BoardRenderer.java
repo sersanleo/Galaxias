@@ -128,6 +128,16 @@ public class BoardRenderer {
 						edgeLength));
 		}
 
+		/*
+		 * for (int x = 0; x < board.width; x++) for (int y = 0; y < board.height; y++)
+		 * { g.draw(new Line2D.Float(selectedEdgeWidthAdd + fullCellSize * x,
+		 * selectedEdgeWidthAdd + fullCellSize * y, selectedEdgeWidthAdd + fullCellSize
+		 * * (x + 1), selectedEdgeWidthAdd + fullCellSize * (y + 1))); g.draw(new
+		 * Line2D.Float(selectedEdgeWidthAdd + fullCellSize * (x + 1),
+		 * selectedEdgeWidthAdd + fullCellSize * y, selectedEdgeWidthAdd + fullCellSize
+		 * * x, selectedEdgeWidthAdd + fullCellSize * (y + 1))); }
+		 */
+
 		// Dibujar aristas seleccionadas
 		{
 			g.setColor(SELECTED_EDGE_COLOR);

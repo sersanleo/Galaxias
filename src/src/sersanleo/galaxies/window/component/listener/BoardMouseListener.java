@@ -21,16 +21,9 @@ public class BoardMouseListener implements MouseListener {
 		this.window = window;
 	}
 
-	@Override
-	public void mouseClicked(MouseEvent e) {
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
+	private final float transformCoord(float coord) {
+		float fullCellSize = panel.renderer.getFullCellSize();
+		return (float) (Math.floor((4 * coord - fullCellSize) / (2 * fullCellSize)) * 0.5f);
 	}
 
 	@Override
@@ -41,8 +34,8 @@ public class BoardMouseListener implements MouseListener {
 			float x = e.getX() - renderer.getSelectedEdgeWidth() / 2;
 			float y = e.getY() - renderer.getSelectedEdgeWidth() / 2;
 
-			x = (float) (Math.floor((x - 0.25f * renderer.getFullCellSize()) / (0.5f * renderer.getFullCellSize())) * 0.5f);
-			y = (float) (Math.floor((y - 0.25f * renderer.getFullCellSize()) / (0.5f * renderer.getFullCellSize())) * 0.5f);
+			x = transformCoord(x);
+			y = transformCoord(y);
 
 			try {
 				Galaxy galaxy = new Galaxy(x, y);
@@ -54,6 +47,18 @@ public class BoardMouseListener implements MouseListener {
 				window.setStatus(exc.getLocalizedMessage());
 			}
 		}
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
 	}
 
 	@Override

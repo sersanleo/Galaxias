@@ -64,6 +64,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private final JMenuItem scale1_25MenuItem = new JRadioButtonMenuItem("125%");
 	private final JMenuItem scale1_5MenuItem = new JRadioButtonMenuItem("150%");
 
+	private final JMenu helpMenu = new JMenu("Ayuda");
+	private final JMenuItem infoMenuItem = new JMenuItem("Información sobre Galaxias");
+
 	// Barra de estado
 	private final JPanel statusBar;
 	private final JLabel status;
@@ -127,6 +130,13 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		scale1_0MenuItem.addActionListener(this);
 		scale1_25MenuItem.addActionListener(this);
 		scale1_5MenuItem.addActionListener(this);
+
+		// Ayuda
+		menuBar.add(helpMenu);
+
+		infoMenuItem.setEnabled(false);
+		infoMenuItem.addActionListener(this);
+		helpMenu.add(infoMenuItem);
 
 		// Barra de estado
 		statusBar = new JPanel();

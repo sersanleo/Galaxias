@@ -13,6 +13,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import src.sersanleo.galaxies.AppConfig;
@@ -119,6 +120,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		add(boardView);
 
 		// Info
+		infoPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 		infoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 		infoPanel.setLayout(new GridLayout(0, 2));
 		add(infoPanel);

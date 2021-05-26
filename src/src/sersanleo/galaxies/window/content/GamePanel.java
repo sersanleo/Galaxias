@@ -116,7 +116,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		fotoButton.addActionListener(this);
-		//fotoButton.setVisible(false);
+		fotoButton.setVisible(false);
 		buttonPanel.add(fotoButton);
 
 		// Board
@@ -308,9 +308,9 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveAsButton.setEnabled(false);
 		checkButton.setEnabled(false);
 		solveButton.setEnabled(false);
-		
-		if(!game.solution.isCheat()) { // Resuelto de manera honesta
-			
+
+		if (!game.solution.isCheat()) { // Resuelto de manera honesta
+
 		}
 	}
 

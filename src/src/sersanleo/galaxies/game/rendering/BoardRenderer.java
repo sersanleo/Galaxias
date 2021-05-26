@@ -14,12 +14,15 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
 public class BoardRenderer {
+	private static final boolean DEBUG = false;
+
 	private static final float CELL_SIZE = 45;
 	private static final float EDGE_WIDTH = 1;
 	private static final float SELECTED_EDGE_WIDTH_ADD = 2;
@@ -129,15 +132,19 @@ public class BoardRenderer {
 						edgeLength));
 		}
 
-		/*
-		 * for (int x = 0; x < board.width; x++) for (int y = 0; y < board.height; y++)
-		 * { g.draw(new Line2D.Float(selectedEdgeWidthAdd + fullCellSize * x,
-		 * selectedEdgeWidthAdd + fullCellSize * y, selectedEdgeWidthAdd + fullCellSize
-		 * * (x + 1), selectedEdgeWidthAdd + fullCellSize * (y + 1))); g.draw(new
-		 * Line2D.Float(selectedEdgeWidthAdd + fullCellSize * (x + 1),
-		 * selectedEdgeWidthAdd + fullCellSize * y, selectedEdgeWidthAdd + fullCellSize
-		 * * x, selectedEdgeWidthAdd + fullCellSize * (y + 1))); }
-		 */
+		// Dividir cada casilla en 4 triángulos
+		if (DEBUG) {
+			for (int x = 0; x < board.width; x++)
+				for (int y = 0; y < board.height; y++) {
+					g.draw(new Line2D.Float(selectedEdgeWidthAdd + fullCellSize * x,
+							selectedEdgeWidthAdd + fullCellSize * y, selectedEdgeWidthAdd + fullCellSize * (x + 1),
+							selectedEdgeWidthAdd + fullCellSize * (y + 1)));
+					g.draw(new Line2D.Float(selectedEdgeWidthAdd + fullCellSize * (x + 1),
+							selectedEdgeWidthAdd + fullCellSize * y, selectedEdgeWidthAdd + fullCellSize * x,
+							selectedEdgeWidthAdd + fullCellSize * (y + 1)));
+				}
+
+		}
 
 		// Dibujar aristas seleccionadas
 		{
@@ -161,12 +168,13 @@ public class BoardRenderer {
 						float x0 = x * fullCellSize;
 						float y0 = y * fullCellSize;
 
-						g.fill(new RoundRectangle2D.Float(x0 + 1, y0, selectedEdgeWidth, selectedEdgeLength,
+						g.fill(new RoundRectangle2D.Float(x0, y0, selectedEdgeWidth, selectedEdgeLength,
 								selectedEdgeWidth, selectedEdgeWidth));
 					}
 		}
 
-		{
+		// Mostrar área de interacción de las aristas
+		if (DEBUG) {
 			g.setColor(Color.BLUE);
 			float width = (0.5f - GameMouseListener.CENTER_THRESHOLD) * cellSize;
 			float length = (cellSize + 2 * (edgeWidth)) * (1 - 2 * GameMouseListener.LENGTH_THRESHOLD);
@@ -184,7 +192,7 @@ public class BoardRenderer {
 					float x0 = selectedEdgeWidthAdd + x * fullCellSize - width;
 					float y0 = selectedEdgeWidthAdd + (y + 0.5f) * fullCellSize - length / 2f;
 
-					g.draw(new Rectangle2D.Float(x0, y0, width * 2, length));
+					g.draw(new Rectangle2D.Float(x0 + 1, y0, width * 2, length));
 
 				}
 		}

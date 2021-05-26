@@ -16,8 +16,8 @@ import src.sersanleo.galaxies.window.content.GamePanel;
 
 public class GameMouseListener implements MouseListener, MouseMotionListener {
 	// Umbral para marcar una arista cuando se arrastra el cursor
-	private static final float LENGTH_THRESHOLD = 0.25f;
-	private static final float CENTER_THRESHOLD = 0.35f;
+	public static final float LENGTH_THRESHOLD = 0.25f;
+	public static final float CENTER_THRESHOLD = 0.35f;
 
 	private final Game game;
 	private final GamePanel gamePanel;

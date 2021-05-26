@@ -116,7 +116,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		fotoButton.addActionListener(this);
-		fotoButton.setVisible(false);
+		//fotoButton.setVisible(false);
 		buttonPanel.add(fotoButton);
 
 		// Board

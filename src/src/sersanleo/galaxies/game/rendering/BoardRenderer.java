@@ -17,6 +17,7 @@ import java.awt.geom.Ellipse2D;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
+import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
 public class BoardRenderer {
 	private static final float CELL_SIZE = 45;
@@ -160,9 +161,32 @@ public class BoardRenderer {
 						float x0 = x * fullCellSize;
 						float y0 = y * fullCellSize;
 
-						g.fill(new RoundRectangle2D.Float(x0, y0, selectedEdgeWidth, selectedEdgeLength,
+						g.fill(new RoundRectangle2D.Float(x0 + 1, y0, selectedEdgeWidth, selectedEdgeLength,
 								selectedEdgeWidth, selectedEdgeWidth));
 					}
+		}
+
+		{
+			g.setColor(Color.BLUE);
+			float width = (0.5f - GameMouseListener.CENTER_THRESHOLD) * cellSize;
+			float length = (cellSize + 2 * (edgeWidth)) * (1 - 2 * GameMouseListener.LENGTH_THRESHOLD);
+			for (int x = 0; x < board.width; x++)
+				for (int y = 1; y < board.height; y++) {
+					float x0 = selectedEdgeWidthAdd + (x + 0.5f) * fullCellSize - length / 2f;
+					float y0 = selectedEdgeWidthAdd + y * fullCellSize - width;
+
+					g.draw(new Rectangle2D.Float(x0 + 1, y0, length, width * 2));
+
+				}
+
+			for (int x = 1; x < board.width; x++)
+				for (int y = 0; y < board.height; y++) {
+					float x0 = selectedEdgeWidthAdd + x * fullCellSize - width;
+					float y0 = selectedEdgeWidthAdd + (y + 0.5f) * fullCellSize - length / 2f;
+
+					g.draw(new Rectangle2D.Float(x0, y0, width * 2, length));
+
+				}
 		}
 
 		// Dibujar galaxias

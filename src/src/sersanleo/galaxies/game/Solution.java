@@ -27,6 +27,7 @@ public final class Solution {
 	private SolutionCell[][] cells;
 
 	private boolean solved = false;
+	private boolean cheat = false;
 
 	// Listeners
 	private final Set<SolutionFoundListener> solutionFoundListeners = new LinkedHashSet<SolutionFoundListener>();
@@ -52,6 +53,7 @@ public final class Solution {
 
 	public final void set(Solution solution) {
 		if (board == solution.board) {
+			cheat = true;
 			for (int x = 0; x < board.width; x++)
 				for (int y = 0; y < board.height - 1; y++)
 					horizontalEdges[x][y] = solution.horizontalEdges[x][y];
@@ -395,5 +397,9 @@ public final class Solution {
 				this.galaxy = galaxy;
 			this.state = state;
 		}
+	}
+
+	public final boolean isCheat() {
+		return cheat;
 	}
 }

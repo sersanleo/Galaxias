@@ -42,6 +42,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	private final JButton saveStateButton = new JButton(icon("saveState.png"));
 	private final JButton nextStepButton = new JButton(icon("nextStep.png"));
 	private final JButton checkButton = new JButton(icon("check.png"));
+	private final JButton solveButton = new JButton(icon("solve.png"));
 	private final JButton fotoButton = new JButton("Foto");
 
 	private final JPanel infoPanel = new JPanel();
@@ -107,9 +108,15 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		checkButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(checkButton);
 
+		solveButton.setToolTipText("Resolver tablero");
+		solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		solveButton.addActionListener(this);
+		solveButton.setEnabled(game.board.solution != null);
+		buttonPanel.add(solveButton);
+
 		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		fotoButton.addActionListener(this);
-		// fotoButton.setVisible(false);
+		fotoButton.setVisible(false);
 		buttonPanel.add(fotoButton);
 
 		// Board
@@ -253,6 +260,15 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		JOptionPane.showMessageDialog(this, sb.toString(), "Estado de la partida", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	private final void solve() {
+		if (JOptionPane.showConfirmDialog(this,
+				"Si resuelves el tablero la partida acabará sin que puedas conservar tu puntuación, ¿de verdad quieres resolverlo?",
+				"¿Resolver?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			game.solution.set(game.board.solution);
+			repaint();
+		}
+	}
+
 	@Override
 	public void actionPerformed(ActionEvent event) {
 		Object eventSource = event.getSource();
@@ -275,6 +291,8 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 			boardView.renderer.save();
 		else if (eventSource == checkButton)
 			check();
+		else if (eventSource == solveButton)
+			solve();
 	}
 
 	@Override
@@ -289,6 +307,11 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveButton.setEnabled(false);
 		saveAsButton.setEnabled(false);
 		checkButton.setEnabled(false);
+		solveButton.setEnabled(false);
+		
+		if(!game.solution.isCheat()) { // Resuelto de manera honesta
+			
+		}
 	}
 
 	@Override

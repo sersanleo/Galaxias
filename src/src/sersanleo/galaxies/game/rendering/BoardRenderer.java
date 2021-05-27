@@ -13,6 +13,7 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -290,9 +291,12 @@ public class BoardRenderer {
 		jpgWriteParam.setCompressionQuality(1f);
 
 		try {
-			jpgWriter.setOutput(ImageIO.createImageOutputStream(file));
+			ImageInputStream iis = ImageIO.createImageOutputStream(file);
+			jpgWriter.setOutput(iis);
 			IIOImage outputImage = new IIOImage(img, null, null);
 			jpgWriter.write(null, outputImage, jpgWriteParam);
+			iis.flush();
+			iis.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

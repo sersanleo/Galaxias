@@ -12,10 +12,10 @@ public class SolverCell extends Vector2i {
 	private final Solver solver;
 	protected final Set<Galaxy> galaxies;
 
-	protected boolean solved = false;
+	private Galaxy solution;
 	protected boolean core = false;
 
-	public SolverCell(Solver solver, int x, int y) {
+	protected SolverCell(Solver solver, int x, int y) {
 		super(x, y);
 
 		this.solver = solver;
@@ -27,14 +27,11 @@ public class SolverCell extends Vector2i {
 	}
 
 	public final boolean isSolved() {
-		return solved;
+		return solution != null;
 	}
 
 	public final Galaxy solution() {
-		if (solved && galaxies.size() == 1)
-			return galaxies.iterator().next();
-		else
-			return null;
+		return solution;
 	}
 
 	public final boolean contains(Galaxy galaxy) {
@@ -49,9 +46,32 @@ public class SolverCell extends Vector2i {
 		galaxies.add(galaxy);
 	}
 
+	protected final void setCore() {
+		if (isSolved()) {
+			core = true;
+
+			Galaxy solution = solution();
+			for (SolverCell neighbor : neighbors())
+				if (!neighbor.core && neighbor.solution() == solution)
+					neighbor.setCore();
+		} else
+			System.err.println("SE HA INTENTADO MARCAR COMO NÚCLEO UNA CASILLA NO RESUELTA");
+	}
+
+	private final void checkCore() {
+		if (isSolved()) {
+			Galaxy solution = solution();
+			for (SolverCell neighbor : neighbors())
+				if (neighbor.core && neighbor.solution() == solution) {
+					setCore();
+					break;
+				}
+		}
+	}
+
 	public final void remove(Galaxy galaxy) throws SolutionNotFoundException {
 		if (contains(galaxy)) {
-			if (solved) {
+			if (isSolved()) {
 				if (solution() == galaxy)
 					throw new SolutionNotFoundException("No se puede eliminar la solución de una casilla.");
 			} else {
@@ -66,12 +86,12 @@ public class SolverCell extends Vector2i {
 	}
 
 	public final void solve(Galaxy solution) throws SolutionNotFoundException {
-		if (solved) {
-			if (solution() != solution)
+		if (isSolved()) {
+			if (this.solution != solution)
 				throw new SolutionNotFoundException(
-						"No se puede solucionar una casilla ya solucionada con otra galaxia.");
+						"No se puede solucionar una casilla ya solucionada con otra galaxia." + super.toString());
 		} else if (contains(solution)) {
-			solved = true;
+			this.solution = solution;
 			solver.solvedCells++;
 
 			Iterator<Galaxy> it = galaxies.iterator();
@@ -83,6 +103,7 @@ public class SolverCell extends Vector2i {
 				}
 			}
 
+			checkCore();
 			symmetric(solution).solve(solution);
 		} else
 			throw new SolutionNotFoundException("No se puede solucionar una casilla con una galaxia que no contiene.");

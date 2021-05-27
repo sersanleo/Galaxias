@@ -156,7 +156,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		// DEBUG
 		SolverPanel panel;
 		try {
-			panel = new SolverPanel(this, Board.createFromRaetsel(40));
+			panel = new SolverPanel(this, Board.createFromRaetsel(157));
 			setContent(panel);
 		} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 			e.printStackTrace();

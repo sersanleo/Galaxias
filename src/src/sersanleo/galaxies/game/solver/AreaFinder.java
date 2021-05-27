@@ -6,14 +6,12 @@ import java.util.Set;
 import src.sersanleo.galaxies.game.Galaxy;
 
 public class AreaFinder {
-	private final SolverCell start;
 	private final Galaxy galaxy;
 
-	public final Set<SolverCell> visited = new HashSet<SolverCell>();
-	public boolean goalReached = false;
+	protected final Set<SolverCell> visited = new HashSet<SolverCell>();
+	protected boolean goalReached = false;
 
-	public AreaFinder(SolverCell start, Galaxy galaxy) {
-		this.start = start;
+	protected AreaFinder(Galaxy galaxy) {
 		this.galaxy = galaxy;
 	}
 
@@ -25,20 +23,12 @@ public class AreaFinder {
 		return cell.contains(galaxy);
 	}
 
-	public final boolean hasReachedGoal() {
-		return goalReached;
-	}
-
-	public final void step(SolverCell cell) {
-		if (!visited.contains(cell) && isStep(cell)) {
-			visited.add(cell);
-			goalReached = goalReached || isGoal(cell);
-			for (SolverCell neighbor : cell.neighbors())
-				step(neighbor);
+	public final void find(SolverCell step) {
+		if (!visited.contains(step) && isStep(step)) {
+			visited.add(step);
+			goalReached = goalReached || isGoal(step);
+			for (SolverCell neighbor : step.neighbors())
+				find(neighbor);
 		}
-	}
-
-	public final void find() {
-		step(start);
 	}
 }

@@ -22,9 +22,9 @@ public final class Main {
 	}
 
 	private static final void testSolver(int level) {
-		Board board;
 		try {
-			board = Board.createFromRaetsel(level);
+			Board board = Board
+					.createFromFile(new File("F:\\Sergio\\Desktop\\TABLEROS\\archivos Raetsel\\" + level + ".tsb"));
 			Solver solver = new Solver(board);
 			solver.solve();
 			new SolverRenderer(solver).save(new File("F:\\Sergio\\Desktop\\TABLEROS\\Raetsel\\" + level + ".jpg"));
@@ -36,8 +36,23 @@ public final class Main {
 
 	@SuppressWarnings("unused")
 	private static final void testSolver() {
-		for (int level = 1; level < 503; level++) {
+		for (int level = 157; level < 503; level++)
 			testSolver(level);
+	}
+
+	private static final void testGuardar(int level) {
+		try {
+			Board board = Board.createFromRaetsel(level);
+			board.save(new File("F:\\Sergio\\Desktop\\TABLEROS\\archivos Raetsel\\" + level + ".tsb"));
+		} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@SuppressWarnings("unused")
+	private static final void testGuardar() {
+		for (int level = 66; level < 503; level++) {
+			testGuardar(level);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {

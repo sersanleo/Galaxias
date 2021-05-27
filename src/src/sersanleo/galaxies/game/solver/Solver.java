@@ -63,46 +63,67 @@ public class Solver {
 				if (cells[x][y].size() == 0)
 					throw new SolutionNotFoundException("No se puede quedar una casilla vacía.");
 
-		// Marcar como resueltas las casillas pertenecientes a una galaxia
+		// Marcar como resueltas y núcleos las casillas pertenecientes a una galaxia
 		for (Galaxy galaxy : board.getGalaxies())
-			for (Vector2i v : galaxy.getNeighbors())
-				cells[v.x][v.y].solve(galaxy);
+			for (Vector2i v : galaxy.getNeighbors()) {
+				SolverCell cell = cells[v.x][v.y];
+				cell.solve(galaxy);
+				cell.setCore();
+			}
 
 		// Marcar como resueltas las casillas con una sola galaxia
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++) {
 				SolverCell cell = cells[x][y];
-				if (!cell.solved && cell.size() == 1)
+				if (!cell.isSolved() && cell.size() == 1)
 					cell.solve();
 			}
 	}
 
 	private final void iterate() throws SolutionNotFoundException {
 		boolean changed;
-
-		// Eliminar posibilidades no conectadas con una casilla solucionada
 		do {
-			changed = false;
-			for (Galaxy galaxy : board.getGalaxies()) {
-				Set<SolverCell> visited = new HashSet<SolverCell>();
+			// Eliminar posibilidades no conectadas con una casilla solucionada
+			do {
+				changed = false;
+				for (Galaxy galaxy : board.getGalaxies()) {
+					Set<SolverCell> visited = new HashSet<SolverCell>();
 
-				for (int x = 0; x < board.width; x++)
-					for (int y = 0; y < board.height; y++) {
-						SolverCell cell = cells[x][y];
+					for (int x = 0; x < board.width; x++)
+						for (int y = 0; y < board.height; y++) {
+							SolverCell cell = cells[x][y];
 
-						if (cell.contains(galaxy) && !visited.contains(cell) && !cell.solved) {
-							AreaFinder pathfinder = new AreaFinder(cell, galaxy);
-							pathfinder.find();
+							if (cell.contains(galaxy) && !visited.contains(cell) && !cell.isSolved()) {
+								AreaFinder pathfinder = new AreaFinder(galaxy);
+								pathfinder.find(cell);
 
-							visited.addAll(pathfinder.visited);
-							if (!pathfinder.goalReached) {
-								changed = changed || !pathfinder.goalReached;
-								for (SolverCell c : pathfinder.visited)
-									c.remove(galaxy);
+								visited.addAll(pathfinder.visited);
+								if (!pathfinder.goalReached) {
+									changed = true;
+									for (SolverCell c : pathfinder.visited)
+										c.remove(galaxy);
+								}
 							}
 						}
+				}
+			} while (changed);
+
+			// Solucionar casillas resueltas para conectar con el núcleo de la galaxia
+			changed = false;
+			for (int x = 0; x < board.width; x++)
+				for (int y = 0; y < board.height; y++) {
+					SolverCell cell = cells[x][y];
+					if (cell.isSolved() && !cell.core) {
+						Galaxy solution = cell.solution();
+						PathFinder pathFinder = new PathFinder(solution);
+						if (pathFinder.find(cell))
+							for (SolverCell cellToSolve : pathFinder.obligatorySteps)
+								if (!cellToSolve.isSolved()) {
+									changed = true;
+									cellToSolve.solve(solution);
+								}
 					}
-			}
+				}
 		} while (changed);
 	}
 
@@ -115,9 +136,10 @@ public class Solver {
 			e.printStackTrace();
 		}
 
-		System.out.println(solved);
+		printPossibilities();
 		printSolved();
-		System.out.println(solvedCells + "/" + board.area);
+		System.out.println();
+		printCore();
 	}
 
 	private final String printFormat(int length) {
@@ -142,14 +164,14 @@ public class Solver {
 		for (int y = 0; y < board.height; y++) {
 			String[] data = new String[board.width];
 			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].solved ? "" + board.getGalaxyId(cells[x][y].solution()) : "-";
+				data[x] = cells[x][y].isSolved() ? "" + board.getGalaxyId(cells[x][y].solution()) : "-";
 			System.out.format(format, data);
 		}
 		System.out.println();
 	}
 
 	public void printPossibilities() {
-		String format = printFormat(7);
+		String format = printFormat(12);
 		for (int y = 0; y < board.height; y++) {
 			String[] data = new String[board.width];
 			for (int x = 0; x < board.width; x++)
@@ -164,7 +186,18 @@ public class Solver {
 		for (int y = 0; y < board.height; y++) {
 			String[] data = new String[board.width];
 			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].solved ? "1" : "0";
+				data[x] = cells[x][y].isSolved() ? "1" : "0";
+			System.out.format(format, data);
+		}
+		System.out.println();
+	}
+
+	public final void printCore() {
+		String format = printFormat(2);
+		for (int y = 0; y < board.height; y++) {
+			String[] data = new String[board.width];
+			for (int x = 0; x < board.width; x++)
+				data[x] = cells[x][y].core ? "1" : "0";
 			System.out.format(format, data);
 		}
 		System.out.println();

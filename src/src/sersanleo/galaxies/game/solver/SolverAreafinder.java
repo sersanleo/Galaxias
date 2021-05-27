@@ -5,14 +5,14 @@ import java.util.Set;
 
 import src.sersanleo.galaxies.game.Galaxy;
 
-public class SolverPathfinder {
+public class SolverAreafinder {
 	private final SolverCell start;
 	private final Galaxy galaxy;
 
 	public final Set<SolverCell> visited = new HashSet<SolverCell>();
 	public boolean goalReached = false;
 
-	public SolverPathfinder(SolverCell start, Galaxy galaxy) {
+	public SolverAreafinder(SolverCell start, Galaxy galaxy) {
 		this.start = start;
 		this.galaxy = galaxy;
 	}
@@ -29,16 +29,16 @@ public class SolverPathfinder {
 		return goalReached;
 	}
 
-	public final void find(SolverCell cell) {
+	public final void step(SolverCell cell) {
 		if (!visited.contains(cell) && isStep(cell)) {
 			visited.add(cell);
 			goalReached = goalReached || isGoal(cell);
 			for (SolverCell neighbor : cell.neighbors())
-				find(neighbor);
+				step(neighbor);
 		}
 	}
 
 	public final void find() {
-		find(start);
+		step(start);
 	}
 }

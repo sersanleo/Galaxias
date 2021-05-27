@@ -13,6 +13,7 @@ public class SolverCell extends Vector2i {
 	protected final Set<Galaxy> galaxies;
 
 	protected boolean solved = false;
+	protected boolean core = false;
 
 	public SolverCell(Solver solver, int x, int y) {
 		super(x, y);
@@ -26,11 +27,11 @@ public class SolverCell extends Vector2i {
 	}
 
 	public final boolean isSolved() {
-		return solved && galaxies.size() == 1;
+		return solved;
 	}
 
 	public final Galaxy solution() {
-		if (isSolved())
+		if (solved && galaxies.size() == 1)
 			return galaxies.iterator().next();
 		else
 			return null;

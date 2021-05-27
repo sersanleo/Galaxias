@@ -19,6 +19,10 @@ public class Solver {
 		cells = emptyCellsArray();
 	}
 
+	public final boolean isSolved() {
+		return solved;
+	}
+
 	public final SolverCell cell(int x, int y) {
 		return cells[x][y];
 	}
@@ -67,51 +71,49 @@ public class Solver {
 			}
 	}
 
-	private final boolean iterate() throws Exception {
-		boolean res = false;
-		for (Galaxy galaxy : board.getGalaxies()) {
-			Set<SolverCell> visited = new HashSet<SolverCell>();
+	private final void iterate() throws Exception {
+		boolean changed;
 
-			for (int x = 0; x < board.width; x++)
-				for (int y = 0; y < board.height; y++) {
-					SolverCell cell = cells[x][y];
+		// Eliminar posibilidades no conectadas con una casilla solucionada
+		do {
+			changed = false;
+			for (Galaxy galaxy : board.getGalaxies()) {
+				Set<SolverCell> visited = new HashSet<SolverCell>();
 
-					if (cell.contains(galaxy) && !visited.contains(cell) && !cell.isSolved()) {
-						SolverPathfinder pathfinder = new SolverPathfinder(cell, galaxy);
-						pathfinder.find();
+				for (int x = 0; x < board.width; x++)
+					for (int y = 0; y < board.height; y++) {
+						SolverCell cell = cells[x][y];
 
-						visited.addAll(pathfinder.visited);
-						if (!pathfinder.goalReached) {
-							res = res || !pathfinder.goalReached;
-							for (SolverCell c : pathfinder.visited)
-								c.remove(galaxy);
+						if (cell.contains(galaxy) && !visited.contains(cell) && !cell.solved) {
+							SolverAreafinder pathfinder = new SolverAreafinder(cell, galaxy);
+							pathfinder.find();
+
+							visited.addAll(pathfinder.visited);
+							if (!pathfinder.goalReached) {
+								changed = changed || !pathfinder.goalReached;
+								for (SolverCell c : pathfinder.visited)
+									c.remove(galaxy);
+							}
 						}
 					}
-				}
-		}
-		return res;
+			}
+		} while (changed);
 	}
 
-	public final void solve() throws Exception {
-		if (solved)
-			return;
+	public final void solve() {
+		try {
+			initialize();
 
-		initialize();
+			iterate();
 
-		int i = 0;
-		boolean keepIterating = true;
-		while (keepIterating) {
-			keepIterating = iterate();
-			i++;
+			solved = solvedCells == board.area;
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
-		solved = solvedCells == board.area;
 		System.out.println(solved);
-
-		printPossibilities();
 		printSolved();
-		System.out.println(solvedCells);
-		System.out.println(i);
+		System.out.println(solvedCells + "/" + board.area);
 	}
 
 	private final String printFormat(int length) {
@@ -136,14 +138,14 @@ public class Solver {
 		for (int y = 0; y < board.height; y++) {
 			String[] data = new String[board.width];
 			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].isSolved() ? "" + board.getGalaxyId(cells[x][y].solution()) : "-";
+				data[x] = cells[x][y].solved ? "" + board.getGalaxyId(cells[x][y].solution()) : "-";
 			System.out.format(format, data);
 		}
 		System.out.println();
 	}
 
 	public void printPossibilities() {
-		String format = printFormat(18);
+		String format = printFormat(7);
 		for (int y = 0; y < board.height; y++) {
 			String[] data = new String[board.width];
 			for (int x = 0; x < board.width; x++)
@@ -158,7 +160,7 @@ public class Solver {
 		for (int y = 0; y < board.height; y++) {
 			String[] data = new String[board.width];
 			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].isSolved() ? "1" : "0";
+				data[x] = cells[x][y].solved ? "1" : "0";
 			System.out.format(format, data);
 		}
 		System.out.println();

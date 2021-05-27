@@ -29,7 +29,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 
 	private final JPanel buttonPanel = new JPanel();
 	private final JButton playButton = new JButton(icon("play.png"));
-	private final JButton solveButton = new JButton(icon("solve.png"));
+	private final JButton solveButton = new JButton(icon("solve.png")); // DEBUG
 
 	public BoardCreatorPanel(GameWindow window, Board board) {
 		super(window);
@@ -53,10 +53,12 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 		playButton.addActionListener(this);
 		buttonPanel.add(playButton);
 
-		solveButton.setToolTipText("Resolver");
-		solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		solveButton.addActionListener(this);
-		buttonPanel.add(solveButton);
+		if (AppConfig.DEBUG) {
+			solveButton.setToolTipText("Resolver");
+			solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+			solveButton.addActionListener(this);
+			buttonPanel.add(solveButton);
+		}
 
 		window.config.addAppConfigChangeListener(this);
 	}
@@ -84,8 +86,10 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 
 		if (eventSource == playButton)
 			play();
-		else if (eventSource == solveButton)
-			solve();
+
+		if (AppConfig.DEBUG)
+			if (eventSource == solveButton)
+				solve();
 	}
 
 	@Override

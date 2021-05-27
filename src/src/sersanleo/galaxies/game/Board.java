@@ -43,6 +43,7 @@ public class Board extends BoundingBoxi {
 			throw new CanNotAddGalaxyException("No se puede añadir la galaxia; estaría fuera del tablero.");
 
 		galaxies.add(galaxy);
+		solution = null;
 	}
 
 	public final void addGalaxy(float x, float y) throws CanNotAddGalaxyException {
@@ -50,7 +51,11 @@ public class Board extends BoundingBoxi {
 	}
 
 	public final boolean removeGalaxy(Galaxy galaxy) {
-		return galaxies.remove(galaxy);
+		if (galaxies.remove(galaxy)) {
+			solution = null;
+			return true;
+		}
+		return false;
 	}
 
 	public final List<Galaxy> getGalaxies() {

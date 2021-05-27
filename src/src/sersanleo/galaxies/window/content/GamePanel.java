@@ -1,11 +1,13 @@
 package src.sersanleo.galaxies.window.content;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -22,12 +24,16 @@ import src.sersanleo.galaxies.AppConfig.ConfigParameter;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.Solution.SolutionFoundListener;
+import src.sersanleo.galaxies.util.ColorUtil;
 import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
 public class GamePanel extends AppContent implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
+
+	private static final int TIMER_UPDATE_RATE = 100; // Cada cuántos milisegundos se actualiza el tiempo
+	private static final int PENALIZATION_EFFECT_LENGTH = 750;
 
 	public final Game game;
 
@@ -44,9 +50,11 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	private final JButton nextStepButton = new JButton(icon("nextStep.png"));
 	private final JButton checkButton = new JButton(icon("check.png"));
 	private final JButton solveButton = new JButton(icon("solve.png"));
-	private final JButton fotoButton = new JButton("Foto");
+	private final JButton fotoButton = new JButton(icon("camera.png")); // DEBUG
+	private final JButton editButton = new JButton(icon("edit.png")); // DEBUG
 
 	private final JPanel infoPanel = new JPanel();
+	private Long lastPenalization;
 	private final JLabel timeLabel = new JLabel();
 	private final JLabel movesLabel = new JLabel();
 
@@ -106,10 +114,15 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		solveButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(solveButton);
 
-		fotoButton.setToolTipText("Guardar imagen del tablero");
-		fotoButton.addActionListener(this);
-		fotoButton.setVisible(false);
-		buttonPanel.add(fotoButton);
+		if (AppConfig.DEBUG) {
+			fotoButton.setToolTipText("Guardar imagen del tablero");
+			fotoButton.addActionListener(this);
+			buttonPanel.add(fotoButton);
+
+			editButton.setToolTipText("Editar tablero");
+			editButton.addActionListener(this);
+			buttonPanel.add(editButton);
+		}
 
 		// Board
 		boardView = new BoardView(game, window.config.getBoardScale());
@@ -125,11 +138,13 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		infoPanel.setLayout(new GridLayout(0, 2));
 		add(infoPanel);
 
+		movesLabel.setHorizontalAlignment(JLabel.CENTER);
 		updateMovesLabel();
 		infoPanel.add(movesLabel);
 
-		updateTimeLabel();
-		timer = new Timer(10, new ActionListener() {
+		timeLabel.setHorizontalAlignment(JLabel.CENTER);
+		updateTimeLabel(0);
+		timer = new Timer(TIMER_UPDATE_RATE, new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateTimeLabel();
@@ -139,8 +154,6 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 		window.config.addAppConfigChangeListener(this);
 		game.solution.addSolutionFoundListener(this);
-
-		timer.start();
 	}
 
 	public final void updateLoadStateButton() {
@@ -156,13 +169,41 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		movesLabel.setText("<html><b>Movimientos: </b>" + game.solution.getMoves());
 	}
 
-	public final void updateTimeLabel() {
-		long elapsedSeconds = game.elapsedSeconds();
+	public final void updateTimeLabel(boolean penalized, long elapsedSeconds) {
+		String color = "000000";
+		if (penalized)
+			lastPenalization = System.currentTimeMillis();
+		if (lastPenalization != null) {
+			long offset = System.currentTimeMillis() - lastPenalization;
+			if (offset < PENALIZATION_EFFECT_LENGTH) {
+				color = Integer.toHexString(ColorUtil
+						.interpolate(Color.RED, Color.BLACK, offset / (float) PENALIZATION_EFFECT_LENGTH).getRGB())
+						.substring(2);
+			} else
+				lastPenalization = null;
+		}
+
 		int seconds = (int) (elapsedSeconds % 60);
 		int minutes = (int) (elapsedSeconds / 60) % 60;
 		int hours = (int) (elapsedSeconds / 3600);
-		timeLabel.setText("<html><b>Tiempo: </b>" + hours + ":" + String.format("%02d", minutes) + ":"
-				+ String.format("%02d", seconds) + "</html");
+
+		timeLabel.setText("<html><span style='color: " + color + "'><b>Tiempo: </b>" + hours + ":"
+				+ String.format("%02d", minutes) + ":" + String.format("%02d", seconds) + "</span></html");
+
+		if (game.solution.isSolved() && timer != null && lastPenalization == null)
+			timer.stop();
+	}
+
+	public final void updateTimeLabel(boolean penalized) {
+		updateTimeLabel(penalized, game.elapsedSeconds());
+	}
+
+	public final void updateTimeLabel(long elapsedSeconds) {
+		updateTimeLabel(false, elapsedSeconds);
+	}
+
+	public final void updateTimeLabel() {
+		updateTimeLabel(false, game.elapsedSeconds());
 	}
 
 	private final void undo() {
@@ -197,6 +238,8 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	private final void nextStep() {
 		game.nextStep();
 		updateUndoRedoButtons();
+		updateMovesLabel();
+		updateTimeLabel(true);
 		boardView.repaint();
 	}
 
@@ -235,6 +278,8 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 	private final void check() {
 		int[] checkResult = game.check();
+		updateTimeLabel(true);
+
 		StringBuilder sb = new StringBuilder("Hay ");
 		sb.append(checkResult[0]);
 		sb.append(" fallo");
@@ -249,6 +294,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		if (checkResult[1] != 1)
 			sb.append("s");
 		sb.append(" por colocar.");
+
 		JOptionPane.showMessageDialog(this, sb.toString(), "Estado de la partida", JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -279,18 +325,20 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 			save();
 		else if (eventSource == nextStepButton)
 			nextStep();
-		else if (eventSource == fotoButton)
-			boardView.renderer.save();
 		else if (eventSource == checkButton)
 			check();
 		else if (eventSource == solveButton)
 			solve();
+
+		if (AppConfig.DEBUG)
+			if (eventSource == fotoButton)
+				boardView.renderer.save(this);
+			else if (eventSource == editButton)
+				window.setContent(new BoardCreatorPanel(window, game.board), true);
 	}
 
 	@Override
 	public void solutionFound() {
-		timer.stop();
-		updateTimeLabel();
 		undoButton.setEnabled(false);
 		redoButton.setEnabled(false);
 		loadStateButton.setEnabled(false);
@@ -300,7 +348,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveAsButton.setEnabled(false);
 		checkButton.setEnabled(false);
 		solveButton.setEnabled(false);
-		
+
 		boardView.removeMouseListener(boardViewListener);
 		boardView.removeMouseMotionListener(boardViewListener);
 
@@ -336,5 +384,6 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	@Override
 	public final void added() {
 		game.restartTimer();
+		timer.start();
 	}
 }

@@ -4,6 +4,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class AppConfig {
+	public final static boolean DEBUG = true;
+
 	private float boardScale = 1;
 
 	private final Set<AppConfigChangeListener> listeners = new LinkedHashSet<AppConfigChangeListener>();

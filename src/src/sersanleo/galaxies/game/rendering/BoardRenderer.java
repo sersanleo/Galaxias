@@ -1,6 +1,7 @@
 package src.sersanleo.galaxies.game.rendering;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
@@ -12,6 +13,8 @@ import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -255,11 +258,24 @@ public class BoardRenderer {
 		return height;
 	}
 
-	public void save() {
-		this.save("F:\\Sergio\\Desktop\\" + board.hashCode() + ".jpg");
+	public final void save(Component component) {
+		JFileChooser fileChooser = new JFileChooser(".");
+		fileChooser.setDialogTitle("Guardar imagen del tablero");
+		FileNameExtensionFilter tsb = new FileNameExtensionFilter("JPG (.jpg)", "jpg");
+		fileChooser.addChoosableFileFilter(tsb);
+		fileChooser.setFileFilter(tsb);
+		File defaultFile = new File("F:\\Sergio\\Desktop\\TABLEROS\\" + System.currentTimeMillis() + ".jpg");
+		if (!defaultFile.getParentFile().exists())
+			defaultFile = new File(defaultFile.getName());
+		fileChooser.setSelectedFile(defaultFile);
+
+		int userSelection = fileChooser.showSaveDialog(component);
+
+		if (userSelection == JFileChooser.APPROVE_OPTION)
+			this.save(fileChooser.getSelectedFile());
 	}
 
-	public final void save(String path) {
+	public final void save(File file) {
 		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
 		paint(g);
@@ -270,10 +286,6 @@ public class BoardRenderer {
 		jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		jpgWriteParam.setCompressionQuality(1f);
 
-		File file = new File(path);
-		File directories = new File(file.getParent());
-		if (!directories.exists())
-			directories.mkdirs();
 		try {
 			jpgWriter.setOutput(ImageIO.createImageOutputStream(file));
 			IIOImage outputImage = new IIOImage(img, null, null);

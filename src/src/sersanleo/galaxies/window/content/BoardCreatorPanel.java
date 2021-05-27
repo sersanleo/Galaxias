@@ -25,6 +25,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 
 	private final BoardView boardView;
 	private final JButton playButton = new JButton(icon("play.png"));
+	private final JButton solveButton = new JButton(icon("solve.png"));
 
 	public BoardCreatorPanel(GameWindow window, Board board) {
 		super(window);
@@ -42,6 +43,11 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 		playButton.addActionListener(this);
 		add(playButton);
 
+		solveButton.setToolTipText("Resolver");
+		solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		solveButton.addActionListener(this);
+		add(solveButton);
+
 		window.config.addAppConfigChangeListener(this);
 	}
 
@@ -57,12 +63,19 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 		}
 	}
 
+	private final void solve() {
+		SolverPanel panel = new SolverPanel(window, board);
+		window.setContent(panel, true);
+	}
+
 	@Override
 	public final void actionPerformed(ActionEvent event) {
 		Object eventSource = event.getSource();
 
 		if (eventSource == playButton)
 			play();
+		else if (eventSource == solveButton)
+			solve();
 	}
 
 	@Override
@@ -84,7 +97,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 				"Estás a punto de salir sin guardar el tablero, ¿desea salir igualmente?", "¿Salir?",
 				JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
 	}
-	
+
 	@Override
 	public final void added() {
 		window.setStatus("Añada galaxias sobre la cuadrícula.");

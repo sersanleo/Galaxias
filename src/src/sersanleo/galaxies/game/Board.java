@@ -1,9 +1,9 @@
 package src.sersanleo.galaxies.game;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
@@ -20,7 +20,7 @@ public class Board extends BoundingBoxi {
 	public final int height;
 	public final int area;
 
-	private final Set<Galaxy> galaxies = new HashSet<Galaxy>();
+	private final List<Galaxy> galaxies = new ArrayList<Galaxy>();
 	public Solution solution;
 
 	public Board(int width, int height) throws BoardTooSmallException {
@@ -53,8 +53,8 @@ public class Board extends BoundingBoxi {
 		return galaxies.remove(galaxy);
 	}
 
-	public final Set<Galaxy> getGalaxies() {
-		return Collections.unmodifiableSet(galaxies);
+	public final List<Galaxy> getGalaxies() {
+		return Collections.unmodifiableList(galaxies);
 	}
 
 	public final void write(ExtFileOutputStream stream) throws IOException {
@@ -135,6 +135,10 @@ public class Board extends BoundingBoxi {
 		board.solution = new Solution(board, horizontalEdges, verticalEdges);
 
 		return board;
+	}
+
+	public final int getGalaxyId(Galaxy galaxy) {
+		return galaxies.indexOf(galaxy);
 	}
 
 	@Override

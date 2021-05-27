@@ -36,6 +36,7 @@ import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.window.content.AppContent;
 import src.sersanleo.galaxies.window.content.BoardCreatorPanel;
 import src.sersanleo.galaxies.window.content.GamePanel;
+import src.sersanleo.galaxies.window.content.SolverPanel;
 
 public class GameWindow extends JFrame implements ActionListener, WindowListener {
 	private static final long serialVersionUID = 1L;
@@ -150,6 +151,10 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		statusBar.add(status, BorderLayout.SOUTH);
 		setStatus("Empiece creando o cargando una partida.");
 
+		// DEBUG
+		SolverPanel panel = new SolverPanel(this, Board.createFromRaetsel(20));
+		setContent(panel);
+
 		setSize(MIN_WIDTH, MIN_HEIGHT);
 		setResizable(false);
 		setIconImage(AppContent.icon("icon.jpg").getImage());
@@ -169,10 +174,11 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 				return;
 		}
 		this.content = content;
-		add(content, BorderLayout.NORTH);
 		resetStatus();
+		add(content, BorderLayout.NORTH);
 		content.added();
 		pack();
+		repaint();
 	}
 
 	public final void setContent(AppContent content) {

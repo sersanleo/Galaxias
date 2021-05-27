@@ -16,7 +16,7 @@ public class BoardView extends JPanel {
 
 	public final BoardRenderer renderer;
 
-	private BoardView(BoardRenderer renderer) {
+	public BoardView(BoardRenderer renderer) {
 		this.renderer = renderer;
 		fitToRendererSize();
 	}

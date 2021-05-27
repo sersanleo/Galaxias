@@ -88,17 +88,13 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		if (game.solution.isSolved())
-			return;
 		if (e.getButton() == MouseEvent.BUTTON1)
 			switchEdge(e.getX(), e.getY(), false);
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		if (game.solution.isSolved())
-			return;
-		if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
+		if ((e.getModifiersEx() & InputEvent.getMaskForButton(MouseEvent.BUTTON1)) != 0)
 			switchEdge(e.getX(), e.getY(), true);
 	}
 

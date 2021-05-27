@@ -1,10 +1,10 @@
 package src.sersanleo.galaxies.util;
 
 public class BoundingBoxf extends BoundingBox {
-	private final float minX;
-	private final float maxX;
-	private final float minY;
-	private final float maxY;
+	public final float minX;
+	public final float maxX;
+	public final float minY;
+	public final float maxY;
 
 	public BoundingBoxf(float minX, float maxX, float minY, float maxY) {
 		this.minX = minX;

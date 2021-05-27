@@ -35,24 +35,24 @@ public class BoardRenderer {
 	private static final float FULL_CELL_SIZE = CELL_SIZE + EDGE_WIDTH;
 
 	// Colores
-	private static final Color EDGE_COLOR = Color.GRAY;
-	private static final Color SELECTED_EDGE_COLOR = Color.BLACK;
-	private static final Color GALAXY_COLOR = Color.WHITE;
-	private static final Color GALAXY_BORDER_COLOR = Color.DARK_GRAY;
+	protected static final Color EDGE_COLOR = Color.GRAY;
+	protected static final Color SELECTED_EDGE_COLOR = Color.BLACK;
+	protected static final Color GALAXY_COLOR = Color.WHITE;
+	protected static final Color GALAXY_BORDER_COLOR = Color.DARK_GRAY;
 
 	public final Board board;
 
 	private float scale = 1;
 
-	private float cellSize = CELL_SIZE;
-	private float edgeWidth = EDGE_WIDTH;
-	private float selectedEdgeWidthAdd = SELECTED_EDGE_WIDTH_ADD;
-	private float galaxyDiameter = GALAXY_DIAMETER;
-	private float galaxyBorder = GALAXY_BORDER;
+	protected float cellSize = CELL_SIZE;
+	protected float edgeWidth = EDGE_WIDTH;
+	protected float selectedEdgeWidthAdd = SELECTED_EDGE_WIDTH_ADD;
+	protected float galaxyDiameter = GALAXY_DIAMETER;
+	protected float galaxyBorder = GALAXY_BORDER;
 
-	private float selectedEdgeWidth = SELECTED_EDGE_WIDTH;
-	private float selectedEdgeLength = SELECTED_EDGE_LENGTH;
-	private float fullCellSize = FULL_CELL_SIZE;
+	protected float selectedEdgeWidth = SELECTED_EDGE_WIDTH;
+	protected float selectedEdgeLength = SELECTED_EDGE_LENGTH;
+	protected float fullCellSize = FULL_CELL_SIZE;
 
 	private int width;
 	private int height;
@@ -100,20 +100,22 @@ public class BoardRenderer {
 		scale(scale / this.scale);
 	}
 
+	protected void paintCells(Graphics2D g) {
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++) {
+				g.setColor(getCellColor(x, y));
+
+				float x0 = selectedEdgeWidthAdd + edgeWidth + x * fullCellSize;
+				float y0 = selectedEdgeWidthAdd + edgeWidth + y * fullCellSize;
+				g.fill(new Rectangle2D.Float(x0, y0, cellSize, cellSize));
+			}
+	}
+
 	public final void paint(Graphics2D g) {
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		// Dibujar celdas
-		{
-			for (int x = 0; x < board.width; x++)
-				for (int y = 0; y < board.height; y++) {
-					g.setColor(getCellColor(x, y));
-
-					float x0 = selectedEdgeWidthAdd + edgeWidth + x * fullCellSize;
-					float y0 = selectedEdgeWidthAdd + edgeWidth + y * fullCellSize;
-					g.fill(new Rectangle2D.Float(x0, y0, cellSize, cellSize));
-				}
-		}
+		paintCells(g);
 
 		// Dibujar rejilla
 		{
@@ -183,7 +185,7 @@ public class BoardRenderer {
 					float x0 = selectedEdgeWidthAdd + (x + 0.5f) * fullCellSize - length / 2f;
 					float y0 = selectedEdgeWidthAdd + y * fullCellSize - width;
 
-					g.draw(new Rectangle2D.Float(x0 + 1, y0, length, width * 2));
+					g.draw(new Rectangle2D.Float(x0, y0, length, width * 2));
 
 				}
 
@@ -192,7 +194,7 @@ public class BoardRenderer {
 					float x0 = selectedEdgeWidthAdd + x * fullCellSize - width;
 					float y0 = selectedEdgeWidthAdd + (y + 0.5f) * fullCellSize - length / 2f;
 
-					g.draw(new Rectangle2D.Float(x0 + 1, y0, width * 2, length));
+					g.draw(new Rectangle2D.Float(x0, y0, width * 2, length));
 
 				}
 		}

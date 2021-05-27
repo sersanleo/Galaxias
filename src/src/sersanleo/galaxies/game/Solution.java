@@ -197,7 +197,7 @@ public final class Solution {
 		resetCells();
 
 		int solvedCells = 0;
-		Set<Galaxy> galaxies = board.getGalaxies();
+		List<Galaxy> galaxies = board.getGalaxies();
 
 		for (Galaxy galaxy : galaxies) {
 			// Primero se obtienen todas las casillas pertenecientes a la galaxia con

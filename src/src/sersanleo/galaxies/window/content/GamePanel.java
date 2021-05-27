@@ -32,6 +32,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 	public final Game game;
 
 	private final BoardView boardView;
+	private final GameMouseListener boardViewListener;
 
 	private final JPanel buttonPanel = new JPanel();
 	private final JButton saveAsButton = new JButton(icon("saveAs.png"));
@@ -122,9 +123,9 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		// Board
 		boardView = new BoardView(game, window.config.getBoardScale());
 		boardView.setAlignmentX(Component.CENTER_ALIGNMENT);
-		GameMouseListener mouseListener = new GameMouseListener(game, this, boardView);
-		boardView.addMouseListener(mouseListener);
-		boardView.addMouseMotionListener(mouseListener);
+		boardViewListener = new GameMouseListener(game, this, boardView);
+		boardView.addMouseListener(boardViewListener);
+		boardView.addMouseMotionListener(boardViewListener);
 		add(boardView);
 
 		// Info
@@ -262,7 +263,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 	private final void solve() {
 		if (JOptionPane.showConfirmDialog(this,
-				"Si resuelves el tablero la partida acabará sin que puedas conservar tu puntuación, ¿de verdad quieres resolverlo?",
+				"Si resuelves el tablero la partida acabará sin que puedas conservar tu puntuación. ¿De verdad quieres resolverlo?",
 				"¿Resolver?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 			game.solution.set(game.board.solution);
 			repaint();
@@ -308,6 +309,9 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		saveAsButton.setEnabled(false);
 		checkButton.setEnabled(false);
 		solveButton.setEnabled(false);
+		
+		boardView.removeMouseListener(boardViewListener);
+		boardView.removeMouseMotionListener(boardViewListener);
 
 		if (!game.solution.isCheat()) { // Resuelto de manera honesta
 

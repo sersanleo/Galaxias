@@ -4,9 +4,12 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Set;
+
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.game.solver.SolverCell;
+import src.sersanleo.galaxies.util.ColorUtil;
 
 public class SolverRenderer extends BoardRenderer {
 	private final static boolean DEBUG = true;
@@ -39,34 +42,44 @@ public class SolverRenderer extends BoardRenderer {
 		this(solver, 1);
 	}
 
-	protected final Color getGalaxyColor(Galaxy galaxy) {
-		if (galaxy == null)
-			return Color.WHITE;
+	private final Color getColorByGalaxy(Galaxy galaxy) {
 		return Color.decode(indexcolors[solver.board.getGalaxyId(galaxy) % indexcolors.length]);
 	}
 
 	@Override
+	protected Color getGalaxyColor(Galaxy galaxy) {
+		Color color = getColorByGalaxy(galaxy);
+		return ColorUtil.add(color, Color.WHITE, 0.5f);
+	}
+
+	@Override
 	protected Color getCellColor(int x, int y) {
-		Galaxy solution = solver.cell(x, y).solution();
-		if (solution == null)
-			return Color.WHITE;
-		return Color.decode(indexcolors[solver.board.getGalaxyId(solution) % indexcolors.length]);
+		Set<Galaxy> galaxies = solver.cell(x, y).getGalaxies();
+		if (galaxies.size() == 1)
+			return getColorByGalaxy(galaxies.iterator().next());
+		return super.getCellColor(x, y);
 	}
 
 	@Override
 	protected boolean horizontalEdge(int x, int y) {
-		SolverCell cell1 = solver.cell(x, y);
+		Set<Galaxy> cell1 = solver.cell(x, y).getGalaxies();
 		SolverCell cell2 = solver.cell(x, y + 1);
-		return (cell1.isSolved() && !cell2.isSolved()) || (!cell1.isSolved() && cell2.isSolved())
-				|| (cell1.isSolved() && cell2.isSolved() && cell1.solution() != cell2.solution());
+
+		for (Galaxy g1 : cell1)
+			if (cell2.contains(g1))
+				return false;
+		return !(cell1.size() == 0 && cell2.size() == 0);
 	}
 
 	@Override
 	protected boolean verticalEdge(int x, int y) {
-		SolverCell cell1 = solver.cell(x, y);
+		Set<Galaxy> cell1 = solver.cell(x, y).getGalaxies();
 		SolverCell cell2 = solver.cell(x + 1, y);
-		return (cell1.isSolved() && !cell2.isSolved()) || (!cell1.isSolved() && cell2.isSolved())
-				|| (cell1.isSolved() && cell2.isSolved() && cell1.solution() != cell2.solution());
+
+		for (Galaxy g1 : cell1)
+			if (cell2.contains(g1))
+				return false;
+		return !(cell1.size() == 0 && cell2.size() == 0);
 	}
 
 	@Override
@@ -84,7 +97,7 @@ public class SolverRenderer extends BoardRenderer {
 					int i = 0;
 					float arc = 360f / cell.size();
 					for (Galaxy galaxy : cell.getGalaxies()) {
-						g.setColor(getGalaxyColor(galaxy));
+						g.setColor(getColorByGalaxy(galaxy));
 						g.fill(new Arc2D.Float(rect, 90 + i * arc, arc, Arc2D.PIE));
 						i++;
 					}

@@ -5,14 +5,14 @@ import java.util.Set;
 
 import src.sersanleo.galaxies.game.Galaxy;
 
-public class SolverAreafinder {
+public class AreaFinder {
 	private final SolverCell start;
 	private final Galaxy galaxy;
 
 	public final Set<SolverCell> visited = new HashSet<SolverCell>();
 	public boolean goalReached = false;
 
-	public SolverAreafinder(SolverCell start, Galaxy galaxy) {
+	public AreaFinder(SolverCell start, Galaxy galaxy) {
 		this.start = start;
 		this.galaxy = galaxy;
 	}

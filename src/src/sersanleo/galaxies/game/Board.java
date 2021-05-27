@@ -1,5 +1,6 @@
 package src.sersanleo.galaxies.game;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +59,10 @@ public class Board extends BoundingBoxi {
 		return false;
 	}
 
+	public final int getGalaxyId(Galaxy galaxy) {
+		return galaxies.indexOf(galaxy);
+	}
+
 	public final List<Galaxy> getGalaxies() {
 		return Collections.unmodifiableList(galaxies);
 	}
@@ -77,6 +82,15 @@ public class Board extends BoundingBoxi {
 			solution.write(stream);
 	}
 
+	public final void save(File file) throws IOException {
+		ExtFileOutputStream stream = new ExtFileOutputStream(file);
+
+		write(stream);
+
+		stream.flush();
+		stream.close();
+	}
+
 	public final static Board createFromStream(ExtFileInputStream stream)
 			throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
 		Board board = new Board(stream.readInt(), stream.readInt());
@@ -88,6 +102,16 @@ public class Board extends BoundingBoxi {
 		if (stream.readBoolean())
 			board.solution = Solution.createFromStream(board, stream);
 
+		return board;
+	}
+
+	public final static Board createFromFile(File file)
+			throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
+		ExtFileInputStream stream = new ExtFileInputStream(file);
+
+		Board board = createFromStream(stream);
+
+		stream.close();
 		return board;
 	}
 
@@ -140,10 +164,6 @@ public class Board extends BoundingBoxi {
 		board.solution = new Solution(board, horizontalEdges, verticalEdges);
 
 		return board;
-	}
-
-	public final int getGalaxyId(Galaxy galaxy) {
-		return galaxies.indexOf(galaxy);
 	}
 
 	@Override

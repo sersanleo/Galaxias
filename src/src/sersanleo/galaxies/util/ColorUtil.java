@@ -9,4 +9,10 @@ public final class ColorUtil {
 				Math.round(invertFactor * start.getBlue() + factor * end.getBlue()),
 				Math.round(invertFactor * start.getGreen() + factor * end.getGreen()));
 	}
+
+	public final static Color add(Color base, Color color, float factor) {
+		return new Color(Math.min(250, Math.round(base.getRed() + color.getRed() * factor)),
+				Math.min(250, Math.round(base.getGreen() + color.getGreen() * factor)),
+				Math.min(250, Math.round(base.getBlue() + color.getBlue() * factor)));
+	}
 }

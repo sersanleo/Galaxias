@@ -40,7 +40,6 @@ public class BoardRenderer {
 	// Colores
 	protected static final Color EDGE_COLOR = Color.GRAY;
 	protected static final Color SELECTED_EDGE_COLOR = Color.BLACK;
-	protected static final Color GALAXY_COLOR = Color.WHITE;
 	protected static final Color GALAXY_BORDER_COLOR = Color.DARK_GRAY;
 
 	public final Board board;
@@ -69,18 +68,6 @@ public class BoardRenderer {
 		this(board, 1);
 	}
 
-	protected boolean horizontalEdge(int x, int y) {
-		return false;
-	}
-
-	protected boolean verticalEdge(int x, int y) {
-		return false;
-	}
-
-	protected Color getCellColor(int x, int y) {
-		return Color.WHITE;
-	}
-
 	public final void scale(float scale) {
 		this.scale *= scale;
 
@@ -101,6 +88,22 @@ public class BoardRenderer {
 
 	public final void setScale(float scale) {
 		scale(scale / this.scale);
+	}
+
+	protected boolean horizontalEdge(int x, int y) {
+		return false;
+	}
+
+	protected boolean verticalEdge(int x, int y) {
+		return false;
+	}
+
+	protected Color getCellColor(int x, int y) {
+		return Color.WHITE;
+	}
+
+	protected Color getGalaxyColor(Galaxy galaxy) {
+		return Color.WHITE;
 	}
 
 	protected void paintCells(Graphics2D g) {
@@ -212,7 +215,7 @@ public class BoardRenderer {
 				g.fill(new Ellipse2D.Float(x0 - galaxyBorder, y0 - galaxyBorder, galaxyDiameter + 2 * galaxyBorder,
 						galaxyDiameter + 2 * galaxyBorder));
 
-				g.setColor(GALAXY_COLOR);
+				g.setColor(getGalaxyColor(galaxy));
 				g.fill(new Ellipse2D.Float(x0, y0, galaxyDiameter, galaxyDiameter));
 			}
 		}

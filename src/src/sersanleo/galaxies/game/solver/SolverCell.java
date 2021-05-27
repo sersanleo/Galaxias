@@ -45,33 +45,31 @@ public class SolverCell extends Vector2i {
 		return galaxies.size();
 	}
 
-	public final void add(Galaxy galaxy) throws Exception {
-		if (solved)
-			throw new Exception("Se ha añadido una galaxia a una casilla ya resulta.");
-
+	public final void add(Galaxy galaxy) {
 		galaxies.add(galaxy);
 	}
 
-	public final void remove(Galaxy galaxy) throws Exception {
+	public final void remove(Galaxy galaxy) throws SolutionNotFoundException {
 		if (contains(galaxy)) {
 			if (solved) {
 				if (solution() == galaxy)
-					throw new Exception("Se ha borrado la solución de una casilla.");
+					throw new SolutionNotFoundException("No se puede eliminar la solución de una casilla.");
 			} else {
 				galaxies.remove(galaxy);
 
 				if (galaxies.size() == 1)
 					solve();
 				else if (galaxies.size() == 0)
-					throw new Exception("Una casilla se ha quedado vacía.");
+					throw new SolutionNotFoundException("No se puede quedar una casilla vacía.");
 			}
 		}
 	}
 
-	public final void solve(Galaxy solution) throws Exception {
+	public final void solve(Galaxy solution) throws SolutionNotFoundException {
 		if (solved) {
 			if (solution() != solution)
-				throw new Exception("Se ha solucionado una casilla ya resuelta con una galaxia distinta.");
+				throw new SolutionNotFoundException(
+						"No se puede solucionar una casilla ya solucionada con otra galaxia.");
 		} else if (contains(solution)) {
 			solved = true;
 			solver.solvedCells++;
@@ -87,10 +85,10 @@ public class SolverCell extends Vector2i {
 
 			symmetric(solution).solve(solution);
 		} else
-			throw new Exception("Se ha solucionado una casilla con una galaxia que no contiene.");
+			throw new SolutionNotFoundException("No se puede solucionar una casilla con una galaxia que no contiene.");
 	}
 
-	public final void solve() throws Exception {
+	public final void solve() throws SolutionNotFoundException {
 		solve(galaxies.iterator().next());
 	}
 

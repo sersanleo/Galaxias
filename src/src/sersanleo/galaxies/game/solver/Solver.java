@@ -41,7 +41,7 @@ public class Solver {
 		return res;
 	}
 
-	private final void initialize() throws Exception {
+	private final void initialize() throws SolutionNotFoundException {
 		// Rellenar todas las posibilidades
 		for (Galaxy galaxy : board.getGalaxies()) {
 			float semiWidth = Math.min(galaxy.x, board.width - (galaxy.x + 1));
@@ -57,6 +57,12 @@ public class Solver {
 					cells[x][y].add(galaxy);
 		}
 
+		// Comprobar que todas las casillas tienen al menos una posibilidad
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++)
+				if (cells[x][y].size() == 0)
+					throw new SolutionNotFoundException("No se puede quedar una casilla vacía.");
+
 		// Marcar como resueltas las casillas pertenecientes a una galaxia
 		for (Galaxy galaxy : board.getGalaxies())
 			for (Vector2i v : galaxy.getNeighbors())
@@ -71,7 +77,7 @@ public class Solver {
 			}
 	}
 
-	private final void iterate() throws Exception {
+	private final void iterate() throws SolutionNotFoundException {
 		boolean changed;
 
 		// Eliminar posibilidades no conectadas con una casilla solucionada
@@ -85,7 +91,7 @@ public class Solver {
 						SolverCell cell = cells[x][y];
 
 						if (cell.contains(galaxy) && !visited.contains(cell) && !cell.solved) {
-							SolverAreafinder pathfinder = new SolverAreafinder(cell, galaxy);
+							AreaFinder pathfinder = new AreaFinder(cell, galaxy);
 							pathfinder.find();
 
 							visited.addAll(pathfinder.visited);
@@ -103,11 +109,9 @@ public class Solver {
 	public final void solve() {
 		try {
 			initialize();
-
 			iterate();
-
 			solved = solvedCells == board.area;
-		} catch (Exception e) {
+		} catch (SolutionNotFoundException e) {
 			e.printStackTrace();
 		}
 

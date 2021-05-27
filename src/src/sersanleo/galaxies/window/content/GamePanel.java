@@ -65,57 +65,48 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 		add(buttonPanel);
 
 		saveAsButton.setToolTipText("Guardar partida como...");
-		saveAsButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		saveAsButton.addActionListener(this);
 		buttonPanel.add(saveAsButton);
 
 		saveButton.setToolTipText("Guardar partida");
 		saveButton.setEnabled(game.saveFile != null);
-		saveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		saveButton.addActionListener(this);
 		buttonPanel.add(saveButton);
 
 		updateUndoRedoButtons();
 		undoButton.setToolTipText("Deshacer");
-		undoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		undoButton.addActionListener(this);
 		buttonPanel.add(undoButton);
 
 		redoButton.setToolTipText("Rehacer");
-		redoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		redoButton.addActionListener(this);
 		buttonPanel.add(redoButton);
 
 		loadStateButton.setToolTipText("Cargar estado guardado");
-		loadStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		updateLoadStateButton();
 		loadStateButton.addActionListener(this);
 		buttonPanel.add(loadStateButton);
 
 		saveStateButton.setToolTipText("Guardar estado actual");
-		saveStateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		saveStateButton.addActionListener(this);
 		buttonPanel.add(saveStateButton);
 
 		nextStepButton.setToolTipText("Realizar siguiente movimiento");
-		nextStepButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		nextStepButton.addActionListener(this);
 		nextStepButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(nextStepButton);
 
 		checkButton.setToolTipText("Comprobar partida");
-		checkButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		checkButton.addActionListener(this);
 		checkButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(checkButton);
 
 		solveButton.setToolTipText("Resolver tablero");
-		solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		solveButton.addActionListener(this);
 		solveButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(solveButton);
 
-		fotoButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		fotoButton.setToolTipText("Guardar imagen del tablero");
 		fotoButton.addActionListener(this);
 		fotoButton.setVisible(false);
 		buttonPanel.add(fotoButton);

@@ -31,7 +31,7 @@ public class SolverPanel extends AppContent implements AppConfigChangeListener {
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-		boardView = new BoardView(new SolverRenderer(solver, 1));
+		boardView = new BoardView(new SolverRenderer(solver, window.config.getBoardScale()));
 		boardView.setAlignmentX(Component.CENTER_ALIGNMENT);
 		add(boardView);
 

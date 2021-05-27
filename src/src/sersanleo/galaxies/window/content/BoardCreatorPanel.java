@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.AppConfig.AppConfigChangeListener;
@@ -24,6 +26,8 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	public final Board board;
 
 	private final BoardView boardView;
+
+	private final JPanel buttonPanel = new JPanel();
 	private final JButton playButton = new JButton(icon("play.png"));
 	private final JButton solveButton = new JButton(icon("solve.png"));
 
@@ -38,15 +42,21 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 		boardView.addMouseListener(new BoardMouseListener(board, boardView, window));
 		add(boardView);
 
+		// Button panel
+		buttonPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+		buttonPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
+		add(buttonPanel);
+
 		playButton.setToolTipText("Comprobar validez y jugar");
 		playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		playButton.addActionListener(this);
-		add(playButton);
+		buttonPanel.add(playButton);
 
 		solveButton.setToolTipText("Resolver");
 		solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		solveButton.addActionListener(this);
-		add(solveButton);
+		buttonPanel.add(solveButton);
 
 		window.config.addAppConfigChangeListener(this);
 	}

@@ -152,7 +152,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setStatus("Empiece creando o cargando una partida.");
 
 		// DEBUG
-		SolverPanel panel = new SolverPanel(this, Board.createFromRaetsel(20));
+		SolverPanel panel = new SolverPanel(this, Board.createFromRaetsel(40));
 		setContent(panel);
 
 		setSize(MIN_WIDTH, MIN_HEIGHT);
@@ -185,8 +185,12 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setContent(content, false);
 	}
 
-	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(5, 2, 14, 1);
-	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(5, 2, 14, 1);
+	private final static int MAX_BOARD_SIZE = 15;
+	private final static int DEFAULT_BOARD_SIZE = 15;
+	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, Board.MIN_SIZE,
+			MAX_BOARD_SIZE, 1);
+	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, Board.MIN_SIZE,
+			MAX_BOARD_SIZE, 1);
 
 	public final void createNewBoard() throws BoardTooSmallException {
 		JSpinner widthSpinner = new JSpinner(widthSpinnerModel);

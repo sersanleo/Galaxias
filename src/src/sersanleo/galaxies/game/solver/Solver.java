@@ -8,11 +8,11 @@ import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class Solver {
-	private boolean solved = false;
-
 	public final Board board;
 	protected final SolverCell[][] cells;
+
 	protected int solvedCells = 0;
+	private boolean solved = false;
 
 	public Solver(Board board) {
 		this.board = board;
@@ -67,7 +67,8 @@ public class Solver {
 			}
 	}
 
-	private final void iterate() throws Exception {
+	private final boolean iterate() throws Exception {
+		boolean res = false;
 		for (Galaxy galaxy : board.getGalaxies()) {
 			Set<SolverCell> visited = new HashSet<SolverCell>();
 
@@ -80,12 +81,15 @@ public class Solver {
 						pathfinder.find();
 
 						visited.addAll(pathfinder.visited);
-						if (!pathfinder.goalReached)
+						if (!pathfinder.goalReached) {
+							res = res || !pathfinder.goalReached;
 							for (SolverCell c : pathfinder.visited)
 								c.remove(galaxy);
+						}
 					}
 				}
 		}
+		return res;
 	}
 
 	public final void solve() throws Exception {
@@ -93,7 +97,13 @@ public class Solver {
 			return;
 
 		initialize();
-		iterate();
+
+		int i = 0;
+		boolean keepIterating = true;
+		while (keepIterating) {
+			keepIterating = iterate();
+			i++;
+		}
 
 		solved = solvedCells == board.area;
 		System.out.println(solved);
@@ -101,6 +111,7 @@ public class Solver {
 		printPossibilities();
 		printSolved();
 		System.out.println(solvedCells);
+		System.out.println(i);
 	}
 
 	private final String printFormat(int length) {

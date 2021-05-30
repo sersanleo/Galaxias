@@ -11,8 +11,8 @@ public final class ColorUtil {
 	}
 
 	public final static Color add(Color base, Color color, float factor) {
-		return new Color(Math.min(255, Math.round(base.getRed() + color.getRed() * factor)),
-				Math.min(255, Math.round(base.getGreen() + color.getGreen() * factor)),
-				Math.min(255, Math.round(base.getBlue() + color.getBlue() * factor)));
+		return new Color(Math.round(base.getRed() + (color.getRed() - base.getRed()) * factor),
+				Math.round(base.getGreen() + (color.getGreen() - base.getGreen()) * factor),
+				Math.round(base.getBlue() + (color.getBlue() - base.getBlue()) * factor));
 	}
 }

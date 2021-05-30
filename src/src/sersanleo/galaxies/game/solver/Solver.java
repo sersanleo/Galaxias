@@ -1,5 +1,6 @@
 package src.sersanleo.galaxies.game.solver;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,18 +10,19 @@ import src.sersanleo.galaxies.util.Vector2i;
 
 public class Solver {
 	public final Board board;
-	protected final SolverCell[][] cells;
 
-	protected int solvedCells = 0;
-	private boolean solved = false;
+	private final Set<Galaxy[][]> solutions = new HashSet<Galaxy[][]>();
+	protected final SolverCell[][] cells;
+	protected int solvedCells;
 
 	public Solver(Board board) {
 		this.board = board;
-		cells = emptyCellsArray();
+
+		cells = new SolverCell[board.width][board.height];
 	}
 
-	public final boolean isSolved() {
-		return solved;
+	public final Set<Galaxy[][]> getSolutions() {
+		return Collections.unmodifiableSet(solutions);
 	}
 
 	public final SolverCell cell(int x, int y) {
@@ -31,17 +33,40 @@ public class Solver {
 		return cell(v.x, v.y);
 	}
 
-	private final SolverCell[][] emptyCellsArray() {
-		SolverCell[][] res = new SolverCell[board.width][board.height];
+	private final void saveSolution() {
+		Galaxy[][] solution = new Galaxy[board.width][board.height];
 
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++)
-				res[x][y] = new SolverCell(this, x, y);
+				solution[x][y] = cells[x][y].solution();
 
-		return res;
+		solutions.add(solution);
+	}
+
+	private final SolverCell[][] getState() {
+		SolverCell[][] state = new SolverCell[board.width][board.height];
+
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++)
+				state[x][y] = cells[x][y].clone();
+
+		return state;
+	}
+
+	private final void setState(SolverCell[][] state) {
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++)
+				cells[x][y] = state[x][y].clone();
 	}
 
 	private final void initialize() throws SolutionNotFoundException {
+		// Inicializar array de casillas
+		solutions.clear();
+		solvedCells = 0;
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++)
+				cells[x][y] = new SolverCell(this, x, y);
+
 		// Rellenar todas las posibilidades
 		for (Galaxy galaxy : board.getGalaxies()) {
 			float semiWidth = Math.min(galaxy.x, board.width - (galaxy.x + 1));
@@ -108,8 +133,6 @@ public class Solver {
 				}
 			} while (changed);
 
-			// Solucionar casillas resueltas para conectar con el núcleo de la galaxia
-			// TODO: Si no hay ningún camino EXCEPCIÓN
 			changed = false;
 			for (int x = 0; x < board.width; x++)
 				for (int y = 0; y < board.height; y++) {
@@ -128,79 +151,61 @@ public class Solver {
 		} while (changed);
 	}
 
+	private final void backtracking() {
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++) {
+				SolverCell cell = cells[x][y];
+
+				if (!cell.isSolved()) {
+					int solvedCells = this.solvedCells;
+					SolverCell[][] state = getState();
+
+					Set<Galaxy> galaxies = new HashSet<Galaxy>(cell.getGalaxies());
+					for (Galaxy galaxy : galaxies) {
+						try {
+							cell.solve(galaxy);
+							iterate();
+
+							if (this.solvedCells < board.area)
+								backtracking();
+							else
+								saveSolution();
+						} catch (SolutionNotFoundException e) {
+						}
+
+						this.solvedCells = solvedCells;
+						setState(state);
+						cell = cells[x][y];
+					}
+					return;
+				}
+			}
+	}
+
+	private final void merge() {
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++) {
+				SolverCell cell = new SolverCell(this, x, y);
+
+				for (Galaxy[][] solution : solutions)
+					cell.add(solution[x][y]);
+
+				cells[x][y] = cell;
+			}
+	}
+
 	public final void solve() {
 		try {
 			initialize();
 			iterate();
-			solved = solvedCells == board.area; // TODO: SOLVED CELLS DEBERIA SER CORE CELLS
+
+			if (solvedCells < board.area) {
+				backtracking();
+				merge();
+			} else
+				saveSolution();
 		} catch (SolutionNotFoundException e) {
 			e.printStackTrace();
 		}
-
-		printPossibilities();
-		printSolved();
-		System.out.println();
-		printCore();
-	}
-
-	private final String printFormat(int length) {
-		StringBuilder format = new StringBuilder();
-
-		for (int i = 0; i < board.width; i++) {
-			format.append("%-");
-			format.append(length);
-			format.append("s ");
-		}
-		format.append("\n");
-
-		return format.toString();
-	}
-
-	private final String printFormat() {
-		return printFormat((int) (1 + Math.floor(Math.log(board.getGalaxies().size()))));
-	}
-
-	private final void print() {
-		String format = printFormat();
-		for (int y = 0; y < board.height; y++) {
-			String[] data = new String[board.width];
-			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].isSolved() ? "" + board.getGalaxyId(cells[x][y].solution()) : "-";
-			System.out.format(format, data);
-		}
-		System.out.println();
-	}
-
-	public void printPossibilities() {
-		String format = printFormat(12);
-		for (int y = 0; y < board.height; y++) {
-			String[] data = new String[board.width];
-			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].toString();
-			System.out.format(format, data);
-		}
-		System.out.println();
-	}
-
-	public final void printSolved() {
-		String format = printFormat(2);
-		for (int y = 0; y < board.height; y++) {
-			String[] data = new String[board.width];
-			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].isSolved() ? "1" : "0";
-			System.out.format(format, data);
-		}
-		System.out.println();
-	}
-
-	public final void printCore() {
-		String format = printFormat(2);
-		for (int y = 0; y < board.height; y++) {
-			String[] data = new String[board.width];
-			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].core ? "1" : "0";
-			System.out.format(format, data);
-		}
-		System.out.println();
 	}
 }

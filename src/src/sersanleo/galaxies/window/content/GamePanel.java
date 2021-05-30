@@ -32,7 +32,7 @@ import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 public class GamePanel extends AppContent implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
 
-	private static final int TIMER_UPDATE_RATE = 100; // Cada cuántos milisegundos se actualiza el tiempo
+	private static final int TIMER_UPDATE_RATE = 100; // Cada cuántos milisegundos se actualiza el cronómetro
 	private static final int PENALIZATION_EFFECT_LENGTH = 750;
 
 	public final Game game;

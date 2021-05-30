@@ -8,9 +8,9 @@ import java.util.Set;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.util.Vector2i;
 
-public class SolverCell extends Vector2i {
+public class SolverCell extends Vector2i implements Cloneable {
 	private final Solver solver;
-	protected final Set<Galaxy> galaxies;
+	private final Set<Galaxy> galaxies;
 
 	private Galaxy solution;
 	protected boolean core = false;
@@ -20,6 +20,21 @@ public class SolverCell extends Vector2i {
 
 		this.solver = solver;
 		galaxies = new HashSet<Galaxy>();
+	}
+
+	private SolverCell(SolverCell cell) {
+		super(cell.x, cell.y);
+
+		solver = cell.solver;
+		galaxies = new HashSet<Galaxy>(cell.galaxies);
+
+		solution = cell.solution;
+		core = cell.core;
+	}
+
+	@Override
+	public SolverCell clone() {
+		return new SolverCell(this);
 	}
 
 	public final Set<Galaxy> getGalaxies() {
@@ -47,15 +62,15 @@ public class SolverCell extends Vector2i {
 	}
 
 	protected final void setCore() {
-		if (isSolved()) {
+		if (isSolved() && !core) {
 			core = true;
+			solver.solvedCells++;
 
 			Galaxy solution = solution();
 			for (SolverCell neighbor : neighbors())
 				if (!neighbor.core && neighbor.solution() == solution)
 					neighbor.setCore();
-		} else
-			System.err.println("SE HA INTENTADO MARCAR COMO NÚCLEO UNA CASILLA NO RESUELTA");
+		}
 	}
 
 	private final void checkCore() {
@@ -92,7 +107,6 @@ public class SolverCell extends Vector2i {
 						"No se puede solucionar una casilla ya solucionada con otra galaxia." + super.toString());
 		} else if (contains(solution)) {
 			this.solution = solution;
-			solver.solvedCells++;
 
 			Iterator<Galaxy> it = galaxies.iterator();
 			while (it.hasNext()) {

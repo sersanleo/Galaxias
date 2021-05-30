@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window.content;
+package src.sersanleo.galaxies.window.screen;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -15,12 +15,12 @@ import src.sersanleo.galaxies.AppConfig.AppConfigChangeListener;
 import src.sersanleo.galaxies.AppConfig.ConfigParameter;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
-import src.sersanleo.galaxies.game.Solution;
+import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 import src.sersanleo.galaxies.window.component.listener.BoardMouseListener;
 
-public class BoardCreatorPanel extends AppContent implements ActionListener, AppConfigChangeListener {
+public class BoardCreatorScreen extends Screen implements ActionListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
 
 	public final Board board;
@@ -31,7 +31,7 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	private final JButton playButton = new JButton(icon("play.png"));
 	private final JButton solveButton = new JButton(icon("solve.png")); // DEBUG
 
-	public BoardCreatorPanel(GameWindow window, Board board) {
+	public BoardCreatorScreen(GameWindow window, Board board) {
 		super(window);
 		this.board = board;
 
@@ -64,20 +64,29 @@ public class BoardCreatorPanel extends AppContent implements ActionListener, App
 	}
 
 	private final void play() {
-		// TODO: Usar solucionador para ver si se puede empezar o no
-
-		if (board.getGalaxies().size() == 0)
-			window.setStatus("El tablero está vacío.");
+		if (board.getGalaxies().size() <= 1)
+			JOptionPane.showMessageDialog(this, "El tablero tiene que tener al menos 2 galaxias.", "Error",
+					JOptionPane.ERROR_MESSAGE);
 		else {
-			Game game = new Game(board, new Solution(board));
-			GamePanel newContent = new GamePanel(window, game);
-			window.setContent(newContent, true);
+			Solver solver = new Solver(board, 2);
+			solver.solve();
+			if (solver.getSolutions() == 1) {
+				board.solution = solver.getSolution();
+				Game game = new Game(board);
+				GameScreen newContent = new GameScreen(window, game);
+				window.setScreen(newContent, true);
+			} else if (solver.getSolutions() == 0)
+				JOptionPane.showMessageDialog(this, "El tablero no tiene una solución válida.", "Error",
+						JOptionPane.ERROR_MESSAGE);
+			else if (solver.getSolutions() > 1)
+				JOptionPane.showMessageDialog(this, "El tablero tiene más de una solución válida.", "Error",
+						JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
 	private final void solve() {
-		SolverPanel panel = new SolverPanel(window, board);
-		window.setContent(panel, true);
+		SolverScreen panel = new SolverScreen(window, board);
+		window.setScreen(panel, true);
 	}
 
 	@Override

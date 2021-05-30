@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window.content;
+package src.sersanleo.galaxies.window.screen;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -18,7 +18,7 @@ import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 
-public class SolverPanel extends AppContent implements AppConfigChangeListener, ActionListener {
+public class SolverScreen extends Screen implements AppConfigChangeListener, ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	public final Solver solver;
@@ -29,15 +29,11 @@ public class SolverPanel extends AppContent implements AppConfigChangeListener, 
 	private final JButton fotoButton = new JButton(icon("camera.png"));
 	private final JButton editButton = new JButton(icon("edit.png"));
 
-	public SolverPanel(GameWindow window, Board board) {
+	public SolverScreen(GameWindow window, Board board) {
 		super(window);
 
-		solver = new Solver(board);
-		try {
-			solver.solve();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		solver = new Solver(board, 2);
+		solver.solve();
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -79,7 +75,7 @@ public class SolverPanel extends AppContent implements AppConfigChangeListener, 
 	public void actionPerformed(ActionEvent event) {
 		Object eventSource = event.getSource();
 		if (eventSource == editButton)
-			window.setContent(new BoardCreatorPanel(window, solver.board));
+			window.setScreen(new BoardCreatorScreen(window, solver.board));
 		else if (eventSource == fotoButton)
 			boardView.renderer.save(this);
 	}

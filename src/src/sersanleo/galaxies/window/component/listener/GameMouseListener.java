@@ -12,7 +12,7 @@ import src.sersanleo.galaxies.game.Movement;
 import src.sersanleo.galaxies.game.Movement.EdgeType;
 import src.sersanleo.galaxies.game.rendering.BoardRenderer;
 import src.sersanleo.galaxies.window.component.BoardView;
-import src.sersanleo.galaxies.window.content.GamePanel;
+import src.sersanleo.galaxies.window.screen.GameScreen;
 
 public class GameMouseListener implements MouseListener, MouseMotionListener {
 	// Umbral para marcar una arista cuando se arrastra el cursor
@@ -20,12 +20,12 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 	public static final float CENTER_THRESHOLD = 0.35f;
 
 	private final Game game;
-	private final GamePanel gamePanel;
+	private final GameScreen gamePanel;
 	private final BoardView boardView;
 
 	private final Set<Movement> movements = new HashSet<Movement>();
 
-	public GameMouseListener(Game game, GamePanel gamePanel, BoardView panel) {
+	public GameMouseListener(Game game, GameScreen gamePanel, BoardView panel) {
 		this.game = game;
 		this.gamePanel = gamePanel;
 		this.boardView = panel;
@@ -59,7 +59,7 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 					gamePanel.updateUndoRedoButtons();
 					gamePanel.updateMovesLabel();
 					movements.add(movement);
-					gamePanel.repaint();
+					boardView.repaint();
 				}
 			}
 		} else { // Arista vertical
@@ -79,7 +79,7 @@ public class GameMouseListener implements MouseListener, MouseMotionListener {
 					gamePanel.updateUndoRedoButtons();
 					gamePanel.updateMovesLabel();
 					movements.add(movement);
-					gamePanel.repaint();
+					boardView.repaint();
 				}
 			}
 		}

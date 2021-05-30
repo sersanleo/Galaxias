@@ -1,28 +1,48 @@
 package src.sersanleo.galaxies.game.solver;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
+import src.sersanleo.galaxies.game.Solution;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class Solver {
 	public final Board board;
+	private final int limit;
 
 	private final Set<Galaxy[][]> solutions = new HashSet<Galaxy[][]>();
 	protected final SolverCell[][] cells;
 	protected int solvedCells;
 
-	public Solver(Board board) {
+	public Solver(Board board, int limit) {
 		this.board = board;
+		this.limit = limit;
 
 		cells = new SolverCell[board.width][board.height];
 	}
 
-	public final Set<Galaxy[][]> getSolutions() {
-		return Collections.unmodifiableSet(solutions);
+	public final int getSolutions() {
+		return solutions.size();
+	}
+
+	public final Solution getSolution() {
+		Galaxy[][] solution = solutions.iterator().next();
+
+		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				if (solution[x][y] != solution[x][y + 1])
+					horizontalEdges[x][y] = true;
+
+		boolean[][] verticalEdges = new boolean[board.width - 1][board.height];
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				if (solution[x][y] != solution[x + 1][y])
+					verticalEdges[x][y] = true;
+
+		return new Solution(board, horizontalEdges, verticalEdges);
 	}
 
 	public final SolverCell cell(int x, int y) {
@@ -33,7 +53,7 @@ public class Solver {
 		return cell(v.x, v.y);
 	}
 
-	private final void saveSolution() {
+	private final boolean saveSolution() {
 		Galaxy[][] solution = new Galaxy[board.width][board.height];
 
 		for (int x = 0; x < board.width; x++)
@@ -41,6 +61,7 @@ public class Solver {
 				solution[x][y] = cells[x][y].solution();
 
 		solutions.add(solution);
+		return solutions.size() >= limit;
 	}
 
 	private final SolverCell[][] getState() {
@@ -151,12 +172,13 @@ public class Solver {
 		} while (changed);
 	}
 
-	private final void backtracking() {
+	private final boolean backtracking() {
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++) {
 				SolverCell cell = cells[x][y];
 
 				if (!cell.isSolved()) {
+					// Guardamos estado actual
 					int solvedCells = this.solvedCells;
 					SolverCell[][] state = getState();
 
@@ -166,20 +188,23 @@ public class Solver {
 							cell.solve(galaxy);
 							iterate();
 
-							if (this.solvedCells < board.area)
-								backtracking();
-							else
-								saveSolution();
+							if (this.solvedCells < board.area) {
+								if (backtracking())
+									return true;
+							} else if (saveSolution())
+								return true;
 						} catch (SolutionNotFoundException e) {
 						}
 
+						// Volvemos al estado guardado antes de irnos por esta rama
 						this.solvedCells = solvedCells;
 						setState(state);
 						cell = cells[x][y];
 					}
-					return;
+					return false;
 				}
 			}
+		return false;
 	}
 
 	private final void merge() {

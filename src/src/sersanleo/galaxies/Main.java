@@ -25,8 +25,10 @@ public final class Main {
 		try {
 			Board board = Board
 					.createFromFile(new File("F:\\Sergio\\Desktop\\TABLEROS\\archivos Raetsel\\" + level + ".tsb"));
-			Solver solver = new Solver(board);
+			Solver solver = new Solver(board, 2);
 			solver.solve();
+			if (solver.getSolutions() == 0)
+				System.err.println(level);
 			new SolverRenderer(solver).save(new File("F:\\Sergio\\Desktop\\TABLEROS\\Raetsel\\" + level + ".jpg"));
 		} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 			System.out.println(level);
@@ -36,7 +38,7 @@ public final class Main {
 
 	@SuppressWarnings("unused")
 	private static final void testSolver() {
-		for (int level = 157; level < 503; level++)
+		for (int level = 1; level < 503; level++)
 			testSolver(level);
 	}
 

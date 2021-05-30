@@ -33,17 +33,18 @@ import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.window.content.AppContent;
-import src.sersanleo.galaxies.window.content.BoardCreatorPanel;
-import src.sersanleo.galaxies.window.content.GamePanel;
-import src.sersanleo.galaxies.window.content.SolverPanel;
+import src.sersanleo.galaxies.game.generator.PuzzleGenerator;
+import src.sersanleo.galaxies.window.screen.Screen;
+import src.sersanleo.galaxies.window.screen.BoardCreatorScreen;
+import src.sersanleo.galaxies.window.screen.GameScreen;
+import src.sersanleo.galaxies.window.screen.SolverScreen;
 
 public class GameWindow extends JFrame implements ActionListener, WindowListener {
 	private static final long serialVersionUID = 1L;
 
 	private static final int MIN_WIDTH = 400;
 	private static final int MIN_HEIGHT = 400;
-	
+
 	private final static int MAX_BOARD_SIZE = 20;
 	private final static int DEFAULT_BOARD_SIZE = 7;
 
@@ -75,8 +76,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private final JPanel statusBar;
 	private final JLabel status;
 
-	// Contenido
-	private AppContent content;
+	// Pantalla
+	private Screen screen;
 
 	public GameWindow() {
 		super("Galaxias");
@@ -102,7 +103,6 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		gameMenu.add(newGameMenuItem);
 
 		generateBoardMenuItem.addActionListener(this);
-		generateBoardMenuItem.setEnabled(false);
 		newGameMenuItem.add(generateBoardMenuItem);
 
 		createBoardMenuItem.addActionListener(this);
@@ -157,17 +157,17 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setStatus("Empiece creando o cargando una partida.");
 
 		// DEBUG
-		SolverPanel panel;
+		SolverScreen panel;
 		try {
-			panel = new SolverPanel(this, Board.createFromRaetsel(157));
-			setContent(panel);
+			panel = new SolverScreen(this, Board.createFromRaetsel(157));
+			setScreen(panel);
 		} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 			e.printStackTrace();
 		}
 
 		setSize(MIN_WIDTH, MIN_HEIGHT);
 		setResizable(false);
-		setIconImage(AppContent.icon("icon.jpg").getImage());
+		setIconImage(Screen.icon("icon.jpg").getImage());
 		setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 		addWindowListener(this);
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -175,24 +175,24 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setLocationRelativeTo(null);
 	}
 
-	public final void setContent(AppContent content, boolean force) {
-		if (this.content != null) {
-			if (force || this.content.canBeRemoved()) {
-				this.content.release();
-				remove(this.content);
+	public final void setScreen(Screen screen, boolean force) {
+		if (this.screen != null) {
+			if (force || this.screen.canBeRemoved()) {
+				this.screen.release();
+				remove(this.screen);
 			} else
 				return;
 		}
-		this.content = content;
+		this.screen = screen;
 		resetStatus();
-		content.added();
-		add(content, BorderLayout.NORTH);
+		screen.added();
+		add(screen, BorderLayout.NORTH);
 		pack();
 		repaint();
 	}
 
-	public final void setContent(AppContent content) {
-		setContent(content, false);
+	public final void setScreen(Screen screen) {
+		setScreen(screen, false);
 	}
 
 	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, Board.MIN_SIZE,
@@ -200,7 +200,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, Board.MIN_SIZE,
 			MAX_BOARD_SIZE, 1);
 
-	public final void createNewBoard() throws BoardTooSmallException {
+	public final void createNewBoard() {
 		JSpinner widthSpinner = new JSpinner(widthSpinnerModel);
 		JSpinner heightSpinner = new JSpinner(heightSpinnerModel);
 
@@ -213,9 +213,36 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		if (result == JOptionPane.OK_OPTION) {
 			int width = (int) widthSpinner.getValue();
 			int height = (int) heightSpinner.getValue();
-			Board board = new Board(width, height);
-			BoardCreatorPanel content = new BoardCreatorPanel(this, board);
-			setContent(content);
+
+			try {
+				Board board = new Board(width, height);
+				BoardCreatorScreen screen = new BoardCreatorScreen(this, board);
+				setScreen(screen);
+			} catch (BoardTooSmallException e) {
+			}
+		}
+	}
+
+	public final void generateNewBoard() {
+		JSpinner widthSpinner = new JSpinner(widthSpinnerModel);
+		JSpinner heightSpinner = new JSpinner(heightSpinnerModel);
+
+		final JComponent[] inputs = new JComponent[] { new JLabel("Ancho:"), widthSpinner, new JLabel("Alto:"),
+				heightSpinner, new JLabel("Dificultad:") };
+
+		int result = JOptionPane.showConfirmDialog(this, inputs, "Generar nuevo tablero", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE);
+
+		if (result == JOptionPane.OK_OPTION) {
+			int width = (int) widthSpinner.getValue();
+			int height = (int) heightSpinner.getValue();
+
+			try {
+				PuzzleGenerator generator = new PuzzleGenerator(width, height, 1);
+				GameScreen screen = new GameScreen(this, new Game(generator.get()));
+				setScreen(screen);
+			} catch (BoardTooSmallException e) {
+			}
 		}
 	}
 
@@ -231,8 +258,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 		if (result == JOptionPane.OK_OPTION) {
 			Board board = Board.createFromRaetsel((int) raetselSpinner.getValue());
-			GamePanel content = new GamePanel(this, new Game(board));
-			setContent(content);
+			GameScreen screen = new GameScreen(this, new Game(board));
+			setScreen(screen);
 		}
 	}
 
@@ -249,8 +276,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		if (userSelection == JFileChooser.APPROVE_OPTION) {
 			File file = fileChooser.getSelectedFile();
 
-			GamePanel content = new GamePanel(this, Game.createFromFile(file));
-			setContent(content);
+			GameScreen screen = new GameScreen(this, Game.createFromFile(file));
+			setScreen(screen);
 		}
 	}
 
@@ -269,10 +296,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		Object eventSource = event.getSource();
 
 		if (eventSource == createBoardMenuItem)
-			try {
-				createNewBoard();
-			} catch (BoardTooSmallException e) {
-			}
+			createNewBoard();
+		else if (eventSource == generateBoardMenuItem)
+			generateNewBoard();
 		else if (eventSource == loadGameMenuItem)
 			try {
 				loadGame();
@@ -301,7 +327,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 	@Override
 	public void windowClosing(WindowEvent arg0) {
-		if (this.content != null && !this.content.canBeRemoved())
+		if (this.screen != null && !this.screen.canBeRemoved())
 			return;
 		System.exit(0);
 	}

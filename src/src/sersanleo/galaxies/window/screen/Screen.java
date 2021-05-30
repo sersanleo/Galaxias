@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window.content;
+package src.sersanleo.galaxies.window.screen;
 
 import java.io.IOException;
 
@@ -8,12 +8,12 @@ import javax.swing.JPanel;
 
 import src.sersanleo.galaxies.window.GameWindow;
 
-public abstract class AppContent extends JPanel {
+public abstract class Screen extends JPanel {
 	private static final long serialVersionUID = 1L;
 
 	protected final GameWindow window;
 
-	public AppContent(GameWindow window) {
+	public Screen(GameWindow window) {
 		this.window = window;
 	}
 
@@ -29,7 +29,7 @@ public abstract class AppContent extends JPanel {
 
 	public static final ImageIcon icon(String name) {
 		try {
-			return new ImageIcon(ImageIO.read(AppContent.class.getResource("/icons/" + name)));
+			return new ImageIcon(ImageIO.read(Screen.class.getResource("/icons/" + name)));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return new ImageIcon();

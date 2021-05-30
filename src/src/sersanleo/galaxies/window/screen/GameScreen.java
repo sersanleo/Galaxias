@@ -1,4 +1,4 @@
-package src.sersanleo.galaxies.window.content;
+package src.sersanleo.galaxies.window.screen;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -29,7 +29,7 @@ import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
-public class GamePanel extends AppContent implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
+public class GameScreen extends Screen implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
 
 	private static final int TIMER_UPDATE_RATE = 100; // Cada cuántos milisegundos se actualiza el cronómetro
@@ -60,7 +60,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 
 	private final Timer timer;
 
-	public GamePanel(GameWindow window, Game game) {
+	public GameScreen(GameWindow window, Game game) {
 		super(window);
 		this.game = game;
 
@@ -334,7 +334,7 @@ public class GamePanel extends AppContent implements ActionListener, SolutionFou
 			if (eventSource == fotoButton)
 				boardView.renderer.save(this);
 			else if (eventSource == editButton)
-				window.setContent(new BoardCreatorPanel(window, game.board), true);
+				window.setScreen(new BoardCreatorScreen(window, game.board), true);
 	}
 
 	@Override

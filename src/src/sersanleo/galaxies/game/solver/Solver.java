@@ -109,6 +109,7 @@ public class Solver {
 			} while (changed);
 
 			// Solucionar casillas resueltas para conectar con el núcleo de la galaxia
+			// TODO: Si no hay ningún camino EXCEPCIÓN
 			changed = false;
 			for (int x = 0; x < board.width; x++)
 				for (int y = 0; y < board.height; y++) {
@@ -131,7 +132,7 @@ public class Solver {
 		try {
 			initialize();
 			iterate();
-			solved = solvedCells == board.area;
+			solved = solvedCells == board.area; // TODO: SOLVED CELLS DEBERIA SER CORE CELLS
 		} catch (SolutionNotFoundException e) {
 			e.printStackTrace();
 		}

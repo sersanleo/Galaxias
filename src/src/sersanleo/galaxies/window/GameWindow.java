@@ -8,8 +8,11 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -223,12 +226,26 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		}
 	}
 
+	private final static Map<String, Float> DIFFICULTY_CHOICES = new LinkedHashMap<String, Float>() {
+		{
+			put("Difícil", 1f);
+			put("Normal", .5f);
+			put("Fácil", 0f);
+		}
+	};
+	private final JComboBox<String> difficultyComboBox = new JComboBox<String>(
+			DIFFICULTY_CHOICES.keySet().toArray(new String[DIFFICULTY_CHOICES.size()])) {
+		{
+			setSelectedIndex(1);
+		}
+	};
+
 	public final void generateNewBoard() {
 		JSpinner widthSpinner = new JSpinner(widthSpinnerModel);
 		JSpinner heightSpinner = new JSpinner(heightSpinnerModel);
 
 		final JComponent[] inputs = new JComponent[] { new JLabel("Ancho:"), widthSpinner, new JLabel("Alto:"),
-				heightSpinner, new JLabel("Dificultad:") };
+				heightSpinner, new JLabel("Dificultad:"), difficultyComboBox };
 
 		int result = JOptionPane.showConfirmDialog(this, inputs, "Generar nuevo tablero", JOptionPane.OK_CANCEL_OPTION,
 				JOptionPane.PLAIN_MESSAGE);
@@ -236,10 +253,11 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		if (result == JOptionPane.OK_OPTION) {
 			int width = (int) widthSpinner.getValue();
 			int height = (int) heightSpinner.getValue();
+			float difficulty = DIFFICULTY_CHOICES.get(difficultyComboBox.getSelectedIndex());
 
 			try {
-				PuzzleGenerator generator = new PuzzleGenerator(width, height, 1);
-				GameScreen screen = new GameScreen(this, new Game(generator.get()));
+				PuzzleGenerator generator = new PuzzleGenerator(width, height, difficulty);
+				GameScreen screen = new GameScreen(this, new Game(generator.generate()));
 				setScreen(screen);
 			} catch (BoardTooSmallException e) {
 			}

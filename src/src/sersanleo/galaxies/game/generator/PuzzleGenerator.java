@@ -33,7 +33,7 @@ public class PuzzleGenerator {
 		this.rnd = rnd;
 
 		rows = new Galaxy[width][height];
-		emptyRows = width * height;
+		emptyRows = board.area;
 
 		horizontalHeatmap = new int[width * 2 - 1][height * 2 - 1];
 		verticalHeatmap = new int[width * 2 - 1][height * 2 - 1];
@@ -172,9 +172,7 @@ public class PuzzleGenerator {
 		return new ParameterizedGalaxyGenerator(this, galaxy, area);
 	}
 
-	private void generate() {
-		int iteration = 0;
-
+	public final Board generate() {
 		while (true) {
 			while (emptyRows > 0) {
 				GalaxyGenerator galaxyGenerator = getRandomGalaxyGenerator();
@@ -182,22 +180,17 @@ public class PuzzleGenerator {
 				galaxyGenerator.add();
 			}
 
-			iteration++;
-
 			Solver solver = new Solver(board, 2);
 			solver.solve();
-			if (solver.getSolutions() == 1)
+			if (solver.getSolutions() == 1) {
 				board.solution = solver.getSolution();
-			else if (solver.getSolutions() > 1) {
+				break;
+			} else if (solver.getSolutions() > 1) {
 				System.err.println("COMPLETAR LUEGO");
+				break;
 			}
-			break;
 		}
-	}
 
-	public Board get() {
-		if (emptyRows > 0)
-			generate();
 		return board;
 	}
 }

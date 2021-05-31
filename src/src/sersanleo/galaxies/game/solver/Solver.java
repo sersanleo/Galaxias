@@ -140,13 +140,13 @@ public class Solver {
 							SolverCell cell = cells[x][y];
 
 							if (cell.contains(galaxy) && !visited.contains(cell) && !cell.isSolved()) {
-								AreaFinder pathfinder = new AreaFinder(galaxy);
-								pathfinder.find(cell);
+								AreaFinder areaFinder = new AreaFinder(galaxy);
+								areaFinder.find(cell);
 
-								visited.addAll(pathfinder.visited);
-								if (!pathfinder.goalReached) {
+								visited.addAll(areaFinder.visited);
+								if (!areaFinder.goalReached) {
 									changed = true;
-									for (SolverCell c : pathfinder.visited)
+									for (SolverCell c : areaFinder.visited)
 										c.remove(galaxy);
 								}
 							}

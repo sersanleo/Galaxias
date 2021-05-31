@@ -68,19 +68,24 @@ public class BoardCreatorScreen extends Screen implements ActionListener, AppCon
 			JOptionPane.showMessageDialog(this, "El tablero tiene que tener al menos 2 galaxias.", "Error",
 					JOptionPane.ERROR_MESSAGE);
 		else {
-			Solver solver = new Solver(board, 2);
-			solver.solve();
-			if (solver.getSolutions() == 1) {
-				board.solution = solver.getSolution();
-				Game game = new Game(board);
-				GameScreen newContent = new GameScreen(window, game);
-				window.setScreen(newContent, true);
-			} else if (solver.getSolutions() == 0)
-				JOptionPane.showMessageDialog(this, "El tablero no tiene una solución válida.", "Error",
-						JOptionPane.ERROR_MESSAGE);
-			else if (solver.getSolutions() > 1)
-				JOptionPane.showMessageDialog(this, "El tablero tiene más de una solución válida.", "Error",
-						JOptionPane.ERROR_MESSAGE);
+			if (board.solution == null) {
+				Solver solver = new Solver(board, 2);
+				solver.solve();
+				if (solver.getSolutions() == 1)
+					board.solution = solver.getSolution();
+				else if (solver.getSolutions() == 0) {
+					JOptionPane.showMessageDialog(this, "El tablero no tiene una solución válida.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				} else if (solver.getSolutions() > 1) {
+					JOptionPane.showMessageDialog(this, "El tablero tiene más de una solución válida.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
+			Game game = new Game(board);
+			GameScreen newContent = new GameScreen(window, game);
+			window.setScreen(newContent, true);
 		}
 	}
 

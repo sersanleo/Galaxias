@@ -159,13 +159,15 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		statusBar.add(status, BorderLayout.SOUTH);
 		setStatus("Empiece creando o cargando una partida.");
 
-		// DEBUG
-		SolverScreen panel;
-		try {
-			panel = new SolverScreen(this, Board.createFromRaetsel(157));
-			setScreen(panel);
-		} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
-			e.printStackTrace();
+		boolean debug = false;
+		if (debug) {
+			SolverScreen panel;
+			try {
+				panel = new SolverScreen(this, Board.createFromRaetsel(157));
+				setScreen(panel);
+			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
+				e.printStackTrace();
+			}
 		}
 
 		setSize(MIN_WIDTH, MIN_HEIGHT);
@@ -226,6 +228,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private final static Map<String, Float> DIFFICULTY_CHOICES = new LinkedHashMap<String, Float>() {
 		{
 			put("Difícil", 1f);
@@ -233,6 +236,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 			put("Fácil", 0f);
 		}
 	};
+	@SuppressWarnings("serial")
 	private final JComboBox<String> difficultyComboBox = new JComboBox<String>(
 			DIFFICULTY_CHOICES.keySet().toArray(new String[DIFFICULTY_CHOICES.size()])) {
 		{
@@ -253,7 +257,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		if (result == JOptionPane.OK_OPTION) {
 			int width = (int) widthSpinner.getValue();
 			int height = (int) heightSpinner.getValue();
-			float difficulty = DIFFICULTY_CHOICES.get(difficultyComboBox.getSelectedIndex());
+			float difficulty = DIFFICULTY_CHOICES.get(difficultyComboBox.getSelectedItem());
 
 			try {
 				PuzzleGenerator generator = new PuzzleGenerator(width, height, difficulty);

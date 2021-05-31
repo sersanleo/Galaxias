@@ -93,11 +93,6 @@ public abstract class GalaxyGenerator {
 	}
 
 	protected int weight(Vector2i v) {
-		int minX = Math.max(0, v.x - 1);
-		int maxX = Math.min(generator.board.width - 1, v.x + 1);
-		int minY = Math.max(0, v.y - 1);
-		int maxY = Math.min(generator.board.height - 1, v.y + 1);
-
 		int tilesAround = 0;
 		if (isVisited(v.x - 1, v.y))
 			tilesAround++;

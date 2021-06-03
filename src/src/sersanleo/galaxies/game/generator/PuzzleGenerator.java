@@ -45,7 +45,7 @@ public class PuzzleGenerator {
 	}
 
 	public PuzzleGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
-		this(width, height, difficulty, new Random().nextLong());
+		this(width, height, difficulty, new RandomUtil());
 	}
 
 	private final void initHeatmap() {

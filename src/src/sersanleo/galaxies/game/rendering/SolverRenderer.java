@@ -49,7 +49,7 @@ public class SolverRenderer extends BoardRenderer {
 	@Override
 	protected Color getGalaxyColor(Galaxy galaxy) {
 		Color color = getColorByGalaxy(galaxy);
-		return ColorUtil.add(color, Color.WHITE, 0.5f);
+		return ColorUtil.add(color, Color.BLACK, 0.25f);
 	}
 
 	@Override

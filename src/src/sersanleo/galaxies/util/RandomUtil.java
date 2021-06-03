@@ -11,6 +11,8 @@ public final class RandomUtil {
 	public RandomUtil(long seed) {
 		this.seed = seed;
 		this.rnd = new Random(seed);
+
+		System.out.println("RandomUtil creado con semilla " + seed);
 	}
 
 	public RandomUtil() {

@@ -5,18 +5,18 @@ import java.util.Set;
 
 import src.sersanleo.galaxies.game.Galaxy;
 
-public class AreaFinder {
+public class FloodFill {
 	private final Galaxy galaxy;
 
 	protected final Set<SolverCell> visited = new HashSet<SolverCell>();
 	protected boolean goalReached = false;
 
-	protected AreaFinder(Galaxy galaxy) {
+	protected FloodFill(Galaxy galaxy) {
 		this.galaxy = galaxy;
 	}
 
 	private final boolean isGoal(SolverCell cell) {
-		return cell.solution() == galaxy;
+		return cell.core && cell.solution() == galaxy;
 	}
 
 	private final boolean isStep(SolverCell cell) {

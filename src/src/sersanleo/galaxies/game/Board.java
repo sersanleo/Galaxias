@@ -59,6 +59,10 @@ public class Board extends BoundingBoxi {
 		return false;
 	}
 
+	public final void clear() {
+		galaxies.clear();
+	}
+
 	public final int getGalaxyId(Galaxy galaxy) {
 		return galaxies.indexOf(galaxy);
 	}

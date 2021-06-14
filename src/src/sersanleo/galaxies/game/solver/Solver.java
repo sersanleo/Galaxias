@@ -1,6 +1,7 @@
 package src.sersanleo.galaxies.game.solver;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.Board;
@@ -158,21 +159,28 @@ public class Solver {
 			for (int x = 0; x < board.width; x++)
 				for (int y = 0; y < board.height; y++) {
 					SolverCell cell = cells[x][y];
+
 					if (cell.isSolved() && !cell.core) {
 						Galaxy solution = cell.solution();
 						PathFinder pathFinder = new PathFinder(solution);
-						if (pathFinder.find(cell))
+
+						if (pathFinder.find(cell, board)) {
 							for (SolverCell cellToSolve : pathFinder.obligatorySteps)
 								if (!cellToSolve.isSolved()) {
 									changed = true;
 									cellToSolve.solve(solution);
 								}
+						}
 					}
 				}
 		} while (changed);
 	}
 
-	private final boolean backtracking() {
+	private final boolean isSolved() {
+		return solvedCells >= board.area;
+	}
+
+	private final boolean backtracking(Galaxy[][] solution) {
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++) {
 				SolverCell cell = cells[x][y];
@@ -182,14 +190,22 @@ public class Solver {
 					int solvedCells = this.solvedCells;
 					SolverCell[][] state = getState();
 
-					Set<Galaxy> galaxies = new HashSet<Galaxy>(cell.getGalaxies());
+					Set<Galaxy> galaxies;
+					if (solution == null)
+						galaxies = new HashSet<Galaxy>();
+					else {
+						galaxies = new LinkedHashSet<Galaxy>();
+						galaxies.add(solution[x][y]);
+					}
+					galaxies.addAll(cell.getGalaxies());
+
 					for (Galaxy galaxy : galaxies) {
 						try {
 							cell.solve(galaxy);
 							iterate();
 
-							if (this.solvedCells < board.area) {
-								if (backtracking())
+							if (!isSolved()) {
+								if (backtracking(solution))
 									return true;
 							} else if (saveSolution())
 								return true;
@@ -219,18 +235,22 @@ public class Solver {
 			}
 	}
 
-	public final void solve() {
+	public final void solve(Galaxy[][] solution) {
 		try {
 			initialize();
 			iterate();
 
-			if (solvedCells < board.area) {
-				backtracking();
-				merge();
-			} else
+			if (isSolved())
 				saveSolution();
+			else {
+				// backtracking(solution);
+				// merge();
+			}
 		} catch (SolutionNotFoundException e) {
-			e.printStackTrace();
 		}
+	}
+
+	public final void solve() {
+		solve(null);
 	}
 }

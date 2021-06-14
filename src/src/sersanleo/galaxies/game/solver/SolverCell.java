@@ -145,16 +145,4 @@ public class SolverCell extends Vector2i implements Cloneable {
 
 		return neighbors;
 	}
-
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("[ ");
-
-		for (Galaxy g : galaxies) {
-			sb.append(solver.board.getGalaxyId(g));
-			sb.append(' ');
-		}
-		sb.append("]");
-		return sb.toString();
-	}
 }

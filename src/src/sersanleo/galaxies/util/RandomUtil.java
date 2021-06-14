@@ -6,11 +6,11 @@ import java.util.Random;
 public final class RandomUtil {
 	public final long seed;
 
-	private final Random rnd;
+	public final Random random;
 
 	public RandomUtil(long seed) {
 		this.seed = seed;
-		this.rnd = new Random(seed);
+		this.random = new Random(seed);
 
 		System.out.println("RandomUtil creado con semilla " + seed);
 	}
@@ -20,7 +20,7 @@ public final class RandomUtil {
 	}
 
 	public int random(int max) {
-		return rnd.nextInt(max);
+		return random.nextInt(max);
 	}
 
 	public <T> T random(List<T> list) {
@@ -28,7 +28,7 @@ public final class RandomUtil {
 	}
 
 	public <T> T randomWeighted(List<WeightedObject<T>> list, int weights) {
-		int index = rnd.nextInt(weights);
+		int index = random.nextInt(weights);
 
 		int sum = 0;
 		WeightedObject<T> obj = null;
@@ -49,7 +49,7 @@ public final class RandomUtil {
 	}
 
 	public float randomFloat() {
-		return rnd.nextFloat();
+		return random.nextFloat();
 	}
 
 	public float random(float max) {

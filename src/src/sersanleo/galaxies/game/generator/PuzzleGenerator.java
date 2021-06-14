@@ -1,43 +1,38 @@
 package src.sersanleo.galaxies.game.generator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
+import src.sersanleo.galaxies.game.GalaxyVector;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.RandomUtil;
-import src.sersanleo.galaxies.util.Vector2f;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class PuzzleGenerator {
 	public final Board board;
-
 	private final float difficulty;
-
 	public final RandomUtil rnd;
 
 	private final Galaxy[][] rows;
 	private int emptyRows;
 
-	private final int[][] horizontalHeatmap;
-	private final int[][] verticalHeatmap;
+	private final int maxGalaxyArea;
+	private final List<GalaxyVector> galaxies;
 
 	private PuzzleGenerator(int width, int height, float difficulty, RandomUtil rnd) throws BoardTooSmallException {
 		board = new Board(width, height);
-
 		this.difficulty = difficulty;
-
 		this.rnd = rnd;
 
 		rows = new Galaxy[width][height];
 		emptyRows = board.area;
 
-		horizontalHeatmap = new int[width * 2 - 1][height * 2 - 1];
-		verticalHeatmap = new int[width * 2 - 1][height * 2 - 1];
-		initHeatmap();
+		maxGalaxyArea = (int) Math.ceil(10);
+		galaxies = initGalaxies();
 	}
 
 	public PuzzleGenerator(int width, int height, float difficulty, long seed) throws BoardTooSmallException {
@@ -48,24 +43,19 @@ public class PuzzleGenerator {
 		this(width, height, difficulty, new RandomUtil());
 	}
 
-	private final void initHeatmap() {
-		for (int x = 0; x < horizontalHeatmap.length; x++)
-			for (int y = 0; y < horizontalHeatmap[0].length; y++)
-				horizontalHeatmap[x][y] = Math.min(x + 1, horizontalHeatmap.length - x);
+	private final List<GalaxyVector> initGalaxies() {
+		List<GalaxyVector> res = new ArrayList<GalaxyVector>();
 
-		for (int x = 0; x < verticalHeatmap.length; x++)
-			for (int y = 0; y < verticalHeatmap[0].length; y++)
-				verticalHeatmap[x][y] = Math.min(y + 1, verticalHeatmap[0].length - y);
-	}
+		for (int x = 0; x < 2 * board.width - 1; x++)
+			for (int y = 0; y < 2 * board.height - 1; y++)
+				res.add(new GalaxyVector(x / 2f, y / 2f));
 
-	public final Galaxy getGalaxy(int x, int y) {
-		if (!board.overlaps(x, y))
-			return null;
-		return rows[x][y];
+		Collections.shuffle(res, rnd.random);
+		return res;
 	}
 
 	public final boolean isEmpty(int x, int y) {
-		return board.overlaps(x, y) && getGalaxy(x, y) == null;
+		return board.overlaps(x, y) && rows[x][y] == null;
 	}
 
 	public final boolean isEmpty(Vector2i v) {
@@ -80,95 +70,39 @@ public class PuzzleGenerator {
 		return isFilled(v.x, v.y);
 	}
 
-	private final void setHorizontalHeatmap(int x, int y, int heat) {
-		if (x >= 0 && x < horizontalHeatmap.length && y >= 0 && y < horizontalHeatmap[0].length
-				&& horizontalHeatmap[x][y] > heat) {
-			horizontalHeatmap[x][y] = heat;
-
-			heat++;
-
-			setHorizontalHeatmap(x - 1, y, heat);
-			setHorizontalHeatmap(x + 1, y, heat);
-		}
-	}
-
-	private final void setVerticalHeatmap(int x, int y, int heat) {
-		if (x >= 0 && x < verticalHeatmap.length && y >= 0 && y < verticalHeatmap[0].length
-				&& verticalHeatmap[x][y] > heat) {
-			verticalHeatmap[x][y] = heat;
-
-			heat++;
-
-			setVerticalHeatmap(x, y - 1, heat);
-			setVerticalHeatmap(x, y + 1, heat);
-		}
-	}
-
-	private final void setHeatmap(int x, int y, int heat) {
-		if (x >= 0 && x < verticalHeatmap.length && y >= 0 && y < verticalHeatmap[0].length && heat == 0) {
-			setHorizontalHeatmap(x, y, heat);
-			setVerticalHeatmap(x, y, heat);
-		}
-	}
-
 	protected void fill(int x, int y, Galaxy value) {
 		if (isEmpty(x, y)) {
 			rows[x][y] = value;
 			emptyRows--;
 
-			int x2 = 2 * x;
-			int y2 = 2 * y;
-
-			setHeatmap(x2 - 1, y2 - 1, 0);
-			setHeatmap(x2, y2 - 1, 0);
-			setHeatmap(x2 + 1, y2 - 1, 0);
-
-			setHeatmap(x2 - 1, y2, 0);
-			setHeatmap(x2, y2, 0);
-			setHeatmap(x2 + 1, y2, 0);
-
-			setHeatmap(x2 - 1, y2 + 1, 0);
-			setHeatmap(x2, y2 + 1, 0);
-			setHeatmap(x2 + 1, y2 + 1, 0);
+			for (int galaxyX = 2 * x - 1; galaxyX <= 2 * x + 1; galaxyX++)
+				for (int galaxyY = 2 * y - 1; galaxyY <= 2 * y + 1; galaxyY++)
+					galaxies.remove(new Galaxy(galaxyX / 2f, galaxyY / 2f));
 		}
 	}
 
-	private final List<Vector2f> getPossibleGalaxies() {
-		List<Vector2f> res = new ArrayList<Vector2f>();
+	private final GalaxyGenerator getRandomGalaxyGenerator() {
+		GalaxyVector galaxy = null;
+		int area = 0;
+		for (GalaxyVector currentGalaxy : galaxies) {
+			System.out.println(currentGalaxy);
+			FloodFillGalaxyGenerator sizeCalculator = new FloodFillGalaxyGenerator(this, currentGalaxy);
+			sizeCalculator.generate();
 
-		int max = 0;
-		for (int x = 0; x < horizontalHeatmap.length; x++)
-			for (int y = 0; y < horizontalHeatmap[0].length; y++) {
-				int heat = Math.min(horizontalHeatmap[x][y] * verticalHeatmap[x][y],
-						Math.round(board.width * board.height * 0.25f));
-
-				if ((x == 0 && y == 0) || (heat > max)) {
-					max = heat;
-					res.clear();
-					res.add(new Vector2f(x / 2f, y / 2f));
-				} else if (heat == max)
-					res.add(new Vector2f(x / 2f, y / 2f));
+			if (sizeCalculator.getArea() > area) {
+				galaxy = currentGalaxy;
+				area = sizeCalculator.getArea();
 			}
 
-		return res;
-	}
+			if (area >= maxGalaxyArea)
+				break;
+		}
 
-	private final GalaxyGenerator getRandomGalaxyGenerator() {
-		Vector2f galaxy = rnd.random(getPossibleGalaxies());
+		galaxies.remove(galaxy);
 
-		MaxGalaxyGenerator sizeCalculator = new MaxGalaxyGenerator(this, galaxy);
-		sizeCalculator.generate();
-
-		int width = sizeCalculator.getWidth();
-		int desiredWidth = Math.min(width, (width % 2 == 0) ? 6 : 7);
-
-		int height = sizeCalculator.getHeight();
-		int desiredHeight = Math.min(height, (height % 2 == 0) ? 6 : 7);
-
-		int availableArea = sizeCalculator.getArea();
-		int maxArea = (int) Math.round(Math.pow(board.width * board.height, 1. / 2.));
-		int minArea = (int) Math.round(0.5 * Math.pow(board.width * board.height, 1. / 2.));
-		int area = Math.min(availableArea, rnd.random(minArea, maxArea));
+		int availableArea = area;
+		int minArea = (int) Math.round(0.5 * Math.pow(board.area, 1. / 2.));
+		area = Math.min(availableArea, rnd.random(minArea, maxGalaxyArea));
 		return new ParameterizedGalaxyGenerator(this, galaxy, area);
 	}
 
@@ -181,11 +115,12 @@ public class PuzzleGenerator {
 			}
 
 			Solver solver = new Solver(board, 2);
-			solver.solve();
+			solver.solve(rows);
+
 			if (solver.getSolutions() == 1) {
 				board.solution = solver.getSolution();
 				break;
-			} else if (solver.getSolutions() > 1) {
+			} else {
 				System.err.println("COMPLETAR LUEGO");
 				break;
 			}

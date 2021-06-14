@@ -7,7 +7,7 @@ import src.sersanleo.galaxies.util.BoundingBoxf;
 import src.sersanleo.galaxies.util.Vector2f;
 import src.sersanleo.galaxies.util.Vector2i;
 
-public class Galaxy extends Vector2f {
+public class Galaxy extends GalaxyVector {
 	private static final float SMALL_RADIUS = 0.5001f;
 	private static final float BIG_RADIUS = 1.0001f;
 
@@ -35,28 +35,5 @@ public class Galaxy extends Vector2f {
 				neighbors.add(new Vector2i(x, y));
 
 		return neighbors;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Math.round(2 * x);
-		result = prime * result + Math.round(2 * y);
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (getClass() != obj.getClass())
-			return false;
-		Galaxy other = (Galaxy) obj;
-		if (Math.round(2 * x) != Math.round(2 * other.x))
-			return false;
-		if (Math.round(2 * y) != Math.round(2 * other.y))
-			return false;
-		return true;
 	}
 }

@@ -48,8 +48,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private static final int MIN_WIDTH = 400;
 	private static final int MIN_HEIGHT = 400;
 
-	private final static int MAX_BOARD_SIZE = 20;
-	private final static int DEFAULT_BOARD_SIZE = 7;
+	private final static int MAX_BOARD_SIZE = 15;
+	private final static int DEFAULT_BOARD_SIZE = 15;
 
 	public final AppConfig config;
 
@@ -163,7 +163,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		if (debug) {
 			SolverScreen panel;
 			try {
-				panel = new SolverScreen(this, Board.createFromRaetsel(157));
+				panel = new SolverScreen(this, Board.createFromRaetsel(5));
 				setScreen(panel);
 			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 				e.printStackTrace();

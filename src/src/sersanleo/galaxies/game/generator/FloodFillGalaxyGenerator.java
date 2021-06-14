@@ -2,8 +2,8 @@ package src.sersanleo.galaxies.game.generator;
 
 import src.sersanleo.galaxies.util.Vector2f;
 
-public class MaxGalaxyGenerator extends GalaxyGenerator {
-	protected MaxGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy) {
+public class FloodFillGalaxyGenerator extends GalaxyGenerator {
+	protected FloodFillGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy) {
 		super(generator, galaxy);
 	}
 

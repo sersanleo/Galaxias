@@ -6,8 +6,10 @@ import java.io.IOException;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
+import src.sersanleo.galaxies.game.generator.PuzzleGenerator;
 import src.sersanleo.galaxies.game.rendering.SolverRenderer;
 import src.sersanleo.galaxies.game.solver.Solver;
+import src.sersanleo.galaxies.util.Raetsel;
 import src.sersanleo.galaxies.window.GameWindow;
 
 public final class Main {
@@ -42,9 +44,22 @@ public final class Main {
 			testSolver(level);
 	}
 
+	@SuppressWarnings("unused")
+	private static final void testGenerator() {
+		while (true) {
+			PuzzleGenerator generator;
+			try {
+				generator = new PuzzleGenerator(6,6, 1);
+				generator.generate();
+			} catch (BoardTooSmallException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private static final void testGuardar(int level) {
 		try {
-			Board board = Board.createFromRaetsel(level);
+			Board board = Raetsel.createBoardFromRaetsel(level);
 			board.save(new File("F:\\Sergio\\Desktop\\TABLEROS\\archivos Raetsel\\" + level + ".tsb"));
 		} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 			e.printStackTrace();

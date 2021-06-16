@@ -1,5 +1,7 @@
 package src.sersanleo.galaxies.util;
 
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -27,25 +29,29 @@ public final class RandomUtil {
 		return list.get(random(list.size()));
 	}
 
-	public <T> T randomWeighted(List<WeightedObject<T>> list, int weights) {
-		int index = random.nextInt(weights);
+	public <T> T randomWeighted(Collection<WeightedObject<T>> collection, double weights) {
+		double index = random.nextDouble() * weights;
 
-		int sum = 0;
+		double sum = 0;
 		WeightedObject<T> obj = null;
-		for (int i = 0; i < list.size(); i++) {
-			obj = list.get(i);
+		Iterator<WeightedObject<T>> it = collection.iterator();
+		while (it.hasNext()) {
+			obj = it.next();
 
 			sum += obj.weight;
 
 			if (sum > index)
 				break;
 		}
-
 		return obj.object;
 	}
 
 	public int random(int min, int max) {
-		return min + random(max - min);
+		int range = max - min;
+		if (range == 0)
+			return min;
+		else
+			return min + random(range);
 	}
 
 	public float randomFloat() {
@@ -62,9 +68,9 @@ public final class RandomUtil {
 
 	public static final class WeightedObject<T> {
 		public final T object;
-		public final int weight;
+		public final double weight;
 
-		public WeightedObject(T object, int weight) {
+		public WeightedObject(T object, double weight) {
 			this.object = object;
 			this.weight = weight;
 		}

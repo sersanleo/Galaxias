@@ -243,7 +243,7 @@ public class Solver {
 			if (isSolved())
 				saveSolution();
 			else {
-				// backtracking(solution);
+				backtracking(solution);
 				// merge();
 			}
 		} catch (SolutionNotFoundException e) {

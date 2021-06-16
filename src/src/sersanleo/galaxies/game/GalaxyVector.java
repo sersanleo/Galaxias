@@ -26,7 +26,7 @@ public class GalaxyVector extends Vector2f {
 			return true;
 		if (getClass() != obj.getClass())
 			return false;
-		Galaxy other = (Galaxy) obj;
+		GalaxyVector other = (GalaxyVector) obj;
 		if (Math.round(2 * x) != Math.round(2 * other.x))
 			return false;
 		if (Math.round(2 * y) != Math.round(2 * other.y))

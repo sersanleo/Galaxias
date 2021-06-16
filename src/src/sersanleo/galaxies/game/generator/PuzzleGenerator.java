@@ -21,6 +21,8 @@ public class PuzzleGenerator {
 	private int emptyRows;
 
 	private final int maxGalaxyArea;
+	private final int minGalaxyArea;
+
 	private final List<GalaxyVector> galaxies;
 
 	private PuzzleGenerator(int width, int height, float difficulty, RandomUtil rnd) throws BoardTooSmallException {
@@ -31,7 +33,8 @@ public class PuzzleGenerator {
 		rows = new Galaxy[width][height];
 		emptyRows = board.area;
 
-		maxGalaxyArea = (int) Math.ceil(10);
+		maxGalaxyArea = (int) Math.ceil(Math.sqrt(board.area));
+		minGalaxyArea = 4;
 		galaxies = initGalaxies();
 	}
 
@@ -52,6 +55,31 @@ public class PuzzleGenerator {
 
 		Collections.shuffle(res, rnd.random);
 		return res;
+	}
+
+	private final void updateGalaxies() {
+		for (int x = 0; x < 2 * board.width - 1; x++)
+			for (int y = 0; y < 2 * board.height - 1; y++) {
+				GalaxyVector galaxy = new GalaxyVector(x / 2f, y / 2f);
+				boolean shouldBeAdded = true;
+
+				for (int rowX = (int) Math.floor(galaxy.x); rowX <= (int) Math.ceil(galaxy.x); rowX++) {
+					for (int rowY = (int) Math.floor(galaxy.y); rowY <= (int) Math.ceil(galaxy.y); rowY++) {
+						if (rows[rowX][rowY] != null) {
+							shouldBeAdded = false;
+							break;
+						}
+					}
+
+					if (!shouldBeAdded)
+						break;
+				}
+
+				if (shouldBeAdded)
+					galaxies.add(galaxy);
+			}
+
+		Collections.shuffle(galaxies, rnd.random);
 	}
 
 	public final boolean isEmpty(int x, int y) {
@@ -77,33 +105,48 @@ public class PuzzleGenerator {
 
 			for (int galaxyX = 2 * x - 1; galaxyX <= 2 * x + 1; galaxyX++)
 				for (int galaxyY = 2 * y - 1; galaxyY <= 2 * y + 1; galaxyY++)
-					galaxies.remove(new Galaxy(galaxyX / 2f, galaxyY / 2f));
+					galaxies.remove(new GalaxyVector(galaxyX / 2f, galaxyY / 2f));
+		}
+	}
+
+	protected void empty(int x, int y) {
+		if (isFilled(x, y)) {
+			rows[x][y] = null;
+			emptyRows++;
 		}
 	}
 
 	private final GalaxyGenerator getRandomGalaxyGenerator() {
+		// Seleccionamos una galaxia que maximice el área
 		GalaxyVector galaxy = null;
-		int area = 0;
+		FloodFillGalaxyGenerator sizeCalculator = null;
 		for (GalaxyVector currentGalaxy : galaxies) {
-			System.out.println(currentGalaxy);
-			FloodFillGalaxyGenerator sizeCalculator = new FloodFillGalaxyGenerator(this, currentGalaxy);
-			sizeCalculator.generate();
+			FloodFillGalaxyGenerator currentSizeCalculator = new FloodFillGalaxyGenerator(this, currentGalaxy);
+			currentSizeCalculator.generate();
 
-			if (sizeCalculator.getArea() > area) {
+			if (galaxy == null || currentSizeCalculator.getArea() > sizeCalculator.getArea()) {
 				galaxy = currentGalaxy;
-				area = sizeCalculator.getArea();
+				sizeCalculator = currentSizeCalculator;
 			}
 
-			if (area >= maxGalaxyArea)
+			if (sizeCalculator.getArea() >= maxGalaxyArea)
 				break;
 		}
 
+		// Eliminamos la galaxia que va a ser expandida
 		galaxies.remove(galaxy);
 
-		int availableArea = area;
-		int minArea = (int) Math.round(0.5 * Math.pow(board.area, 1. / 2.));
-		area = Math.min(availableArea, rnd.random(minArea, maxGalaxyArea));
-		return new ParameterizedGalaxyGenerator(this, galaxy, area);
+		int maxArea = Math.min(sizeCalculator.getArea(), maxGalaxyArea);
+		int minArea = (int) Math.min(maxArea, minGalaxyArea);
+
+		int skeletonArea = sizeCalculator.getSkeletonArea();
+		int randomArea = rnd.random(minArea, maxArea);
+		int area = Math.round(difficulty * skeletonArea + (1 - difficulty) * randomArea);
+		/*
+		 * if (difficulty > 0.999f) area = skeletonArea; else area = randomArea;
+		 */
+		System.out.println("skeleton=" + skeletonArea + " random=" + randomArea + " area=" + area);
+		return new ParameterizedGalaxyGenerator(this, galaxy, area, difficulty);
 	}
 
 	public final Board generate() {
@@ -121,6 +164,7 @@ public class PuzzleGenerator {
 				board.solution = solver.getSolution();
 				break;
 			} else {
+				board.solution = solver.getSolution();
 				System.err.println("COMPLETAR LUEGO");
 				break;
 			}

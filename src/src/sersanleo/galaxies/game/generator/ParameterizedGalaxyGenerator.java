@@ -8,8 +8,12 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 	private final int minHeight, maxHeight;
 	private final int desiredArea;
 
+	// Usados para la probabilidad gaussiana
+	private final float b;
+	private final float c;
+
 	public ParameterizedGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy, int minWidth, int maxWidth,
-			int minHeight, int maxHeight, int desiredArea) {
+			int minHeight, int maxHeight, int desiredArea, float difficulty) {
 		super(generator, galaxy);
 
 		this.minWidth = minWidth;
@@ -17,15 +21,28 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 		this.minHeight = minHeight;
 		this.maxHeight = maxHeight;
 		this.desiredArea = desiredArea;
+
+		this.b = 2.7f - difficulty * 1.7f; // Centro de la campana
+		this.c = 0.7f - difficulty * 0.3f; // Apertura de la campana
 	}
 
-	public ParameterizedGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy, int desiredArea) {
-		this(generator, galaxy, 0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE, desiredArea);
+	public ParameterizedGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy, int desiredArea, float difficulty) {
+		this(generator, galaxy, 0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE, desiredArea, difficulty);
 	}
 
-	@Override
-	protected void individualFill(Vector2i v) {
-		super.individualFill(v);
+	protected double weight(Vector2i v) {
+		int tilesAround = 0;
+
+		if (isVisited(v.x - 1, v.y))
+			tilesAround++;
+		if (isVisited(v.x + 1, v.y))
+			tilesAround++;
+		if (isVisited(v.x, v.y - 1))
+			tilesAround++;
+		if (isVisited(v.x, v.y + 1))
+			tilesAround++;
+
+		return Math.exp(-Math.pow(tilesAround - b, 2) / (2 * Math.pow(c, 2)));
 	}
 
 	private final boolean makesDesiredSize(int x, int y) {
@@ -53,7 +70,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 
 	@Override
 	protected boolean isValid(int x, int y) {
-		return !createsHole(x, y) && makesDesiredSize(x, y);
+		return makesDesiredSize(x, y);
 	}
 
 	private boolean sizeReached() {

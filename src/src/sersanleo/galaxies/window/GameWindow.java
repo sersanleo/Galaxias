@@ -37,6 +37,7 @@ import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.game.generator.PuzzleGenerator;
+import src.sersanleo.galaxies.util.Raetsel;
 import src.sersanleo.galaxies.window.screen.Screen;
 import src.sersanleo.galaxies.window.screen.BoardCreatorScreen;
 import src.sersanleo.galaxies.window.screen.GameScreen;
@@ -48,8 +49,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private static final int MIN_WIDTH = 400;
 	private static final int MIN_HEIGHT = 400;
 
-	private final static int MAX_BOARD_SIZE = 15;
-	private final static int DEFAULT_BOARD_SIZE = 15;
+	private final static int MIN_BOARD_SIZE = 4;
+	private final static int MAX_BOARD_SIZE = 18;
+	private final static int DEFAULT_BOARD_SIZE = 12;
 
 	public final AppConfig config;
 
@@ -163,7 +165,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		if (debug) {
 			SolverScreen panel;
 			try {
-				panel = new SolverScreen(this, Board.createFromRaetsel(5));
+				panel = new SolverScreen(this, Raetsel.createBoardFromRaetsel(5));
 				setScreen(panel);
 			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
 				e.printStackTrace();
@@ -200,9 +202,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setScreen(screen, false);
 	}
 
-	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, Board.MIN_SIZE,
+	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, MIN_BOARD_SIZE,
 			MAX_BOARD_SIZE, 1);
-	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, Board.MIN_SIZE,
+	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, MIN_BOARD_SIZE,
 			MAX_BOARD_SIZE, 1);
 
 	public final void createNewBoard() {
@@ -279,7 +281,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
 		if (result == JOptionPane.OK_OPTION) {
-			Board board = Board.createFromRaetsel((int) raetselSpinner.getValue());
+			Board board = Raetsel.createBoardFromRaetsel((int) raetselSpinner.getValue());
 			GameScreen screen = new GameScreen(this, new Game(board));
 			setScreen(screen);
 		}

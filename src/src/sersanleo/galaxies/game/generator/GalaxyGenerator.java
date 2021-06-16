@@ -1,11 +1,12 @@
 package src.sersanleo.galaxies.game.generator;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.util.BoundingBoxi;
 import src.sersanleo.galaxies.util.RandomUtil.WeightedObject;
 import src.sersanleo.galaxies.util.Vector2f;
 import src.sersanleo.galaxies.util.Vector2i;
@@ -26,16 +27,25 @@ public abstract class GalaxyGenerator {
 	}
 
 	private final void addNext(Vector2i v) {
-		if (v.y > Math.floor(galaxy.y))
-			return;
-
-		Vector2i symmetric = galaxy.symmetric(v).round();
-		if (!next.contains(v) && !visited.contains(v) && generator.isEmpty(v) && generator.isEmpty(symmetric))
-			next.add(v);
+		// Solo expandimos por la mitad de la galaxia
+		if (v.y <= Math.floor(galaxy.y)) {
+			Vector2i symmetric = galaxy.symmetric(v).round();
+			if (!next.contains(v) && !visited.contains(v) && generator.isEmpty(v) && generator.isEmpty(symmetric))
+				next.add(v);
+		}
 	}
 
 	private final void addNext(int x, int y) {
 		addNext(new Vector2i(x, y));
+	}
+
+	public final int getSkeletonArea() {
+		int res = width + height;
+
+		if (width % 2 == 1 || height % 2 == 1)
+			res--;
+
+		return res;
 	}
 
 	protected void individualFill(Vector2i v) {
@@ -63,10 +73,13 @@ public abstract class GalaxyGenerator {
 			individualFill(symmetric);
 	}
 
-	private final boolean isVisited(int x, int y) {
+	protected final boolean isVisited(int x, int y) {
 		return visited.contains(new Vector2i(x, y));
 	}
-
+	
+	// Esto servía para evitar la creación de galaxias con agujeros (galaxias rodeadas de una misma galaxia).
+	// Creía que hacía que disminuía el número de soluciones y, por tanto, aligeraba la resolución y generación de tableros;
+	// luego ví que no, pero lo dejo por si en un futuro me hace falta
 	protected final boolean createsHole(int x, int y) {
 		boolean[] surroundings = new boolean[] { isVisited(x - 1, y - 1), isVisited(x, y - 1), isVisited(x + 1, y - 1),
 				isVisited(x + 1, y), isVisited(x + 1, y + 1), isVisited(x, y + 1), isVisited(x - 1, y + 1),
@@ -92,28 +105,18 @@ public abstract class GalaxyGenerator {
 		return isValid(v.x, v.y);
 	}
 
-	protected int weight(Vector2i v) {
-		int tilesAround = 0;
-		if (isVisited(v.x - 1, v.y))
-			tilesAround++;
-		if (isVisited(v.x + 1, v.y))
-			tilesAround++;
-		if (isVisited(v.x, v.y - 1))
-			tilesAround++;
-		if (isVisited(v.x, v.y + 1))
-			tilesAround++;
-
-		int weight = (int) Math.pow(tilesAround, 5);
-		return weight;
+	protected double weight(Vector2i v) {
+		return 1;
 	}
 
 	private final Vector2i getNextStep() {
-		List<WeightedObject<Vector2i>> steps = new ArrayList<WeightedObject<Vector2i>>(next.size());
+		TreeSet<WeightedObject<Vector2i>> steps = new TreeSet<WeightedObject<Vector2i>>(
+				Comparator.comparing(x -> x.weight));
 
-		int sum = 0;
+		double sum = 0;
 		for (Vector2i step : next)
 			if (isValid(step)) {
-				int weight = weight(step);
+				double weight = weight(step);
 				sum += weight;
 				steps.add(new WeightedObject<Vector2i>(step, weight));
 			}
@@ -166,31 +169,6 @@ public abstract class GalaxyGenerator {
 
 	public int getHeight() {
 		return height;
-	}
-
-	public final int getSkeletonArea() {
-		int res = width + height;
-
-		if (width % 2 == 1 || height % 2 == 1)
-			res--;
-
-		return res;
-	}
-
-	/* Area delimitada entre width y height */
-	public final int getArea(int width, int height) {
-		int res = 0;
-
-		width--;
-		height--;
-
-		BoundingBoxi bb = new BoundingBoxi(Math.round(galaxy.x - width / 2f), Math.round(galaxy.x + width / 2f),
-				Math.round(galaxy.y - height / 2f), Math.round(galaxy.y + height / 2f));
-		for (Vector2i v : visited)
-			if (bb.overlaps(v))
-				res++;
-
-		return res;
 	}
 
 	protected final int calculateWidth(int x) {

@@ -1,5 +1,7 @@
 package src.sersanleo.galaxies.window.screen;
 
+import static src.sersanleo.galaxies.util.SwingUtil.iconButton;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -41,17 +43,17 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 	private final GameMouseListener boardViewListener;
 
 	private final JPanel buttonPanel = new JPanel();
-	private final JButton saveAsButton = new JButton(icon("saveAs.png"));
-	private final JButton saveButton = new JButton(icon("save.png"));
+	private final JButton saveAsButton = iconButton("saveAs.png", "Guardar partida como...");
+	private final JButton saveButton = iconButton("save.png", "Guardar partida");
 	private final JButton undoButton = iconButton("undo.png", "Deshacer");
-	private final JButton redoButton = new JButton(icon("redo.png"));
-	private final JButton loadStateButton = new JButton(icon("loadState.png"));
-	private final JButton saveStateButton = new JButton(icon("saveState.png"));
-	private final JButton nextStepButton = new JButton(icon("nextStep.png"));
-	private final JButton checkButton = new JButton(icon("check.png"));
-	private final JButton solveButton = new JButton(icon("solve.png"));
-	private final JButton fotoButton = new JButton(icon("camera.png")); // DEBUG
-	private final JButton editButton = new JButton(icon("edit.png")); // DEBUG
+	private final JButton redoButton = iconButton("redo.png", "Rehacer");
+	private final JButton loadStateButton = iconButton("loadState.png", "Cargar estado guardado");
+	private final JButton saveStateButton = iconButton("saveState.png", "Guardar estado actual");
+	private final JButton nextStepButton = iconButton("nextStep.png", "Realizar siguiente movimiento");
+	private final JButton checkButton = iconButton("check.png", "Comprobar partida");
+	private final JButton solveButton = iconButton("solve.png", "Resolver tablero");
+	private final JButton fotoButton = iconButton("camera.png", "Guardar imagen del tablero"); // DEBUG
+	private final JButton editButton = iconButton("edit.png", "Editar tablero"); // DEBUG
 
 	private final JPanel infoPanel = new JPanel();
 	private Long lastPenalization;
@@ -72,11 +74,9 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 		add(buttonPanel);
 
-		saveAsButton.setToolTipText("Guardar partida como...");
 		saveAsButton.addActionListener(this);
 		buttonPanel.add(saveAsButton);
 
-		saveButton.setToolTipText("Guardar partida");
 		saveButton.setEnabled(game.saveFile != null);
 		saveButton.addActionListener(this);
 		buttonPanel.add(saveButton);
@@ -85,42 +85,34 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 		undoButton.addActionListener(this);
 		buttonPanel.add(undoButton);
 
-		redoButton.setToolTipText("Rehacer");
 		redoButton.addActionListener(this);
 		buttonPanel.add(redoButton);
 
-		loadStateButton.setToolTipText("Cargar estado guardado");
 		updateLoadStateButton();
 		loadStateButton.addActionListener(this);
 		buttonPanel.add(loadStateButton);
 
-		saveStateButton.setToolTipText("Guardar estado actual");
 		saveStateButton.addActionListener(this);
 		buttonPanel.add(saveStateButton);
 
-		nextStepButton.setToolTipText("Realizar siguiente movimiento");
 		nextStepButton.addActionListener(this);
 		nextStepButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(nextStepButton);
 
-		checkButton.setToolTipText("Comprobar partida");
 		checkButton.addActionListener(this);
 		checkButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(checkButton);
 
-		solveButton.setToolTipText("Resolver tablero");
 		solveButton.addActionListener(this);
 		solveButton.setEnabled(game.board.solution != null);
 		buttonPanel.add(solveButton);
 
 		if (AppConfig.DEBUG) {
 			fotoButton.setBackground(Color.MAGENTA);
-			fotoButton.setToolTipText("Guardar imagen del tablero");
 			fotoButton.addActionListener(this);
 			buttonPanel.add(fotoButton);
 
 			editButton.setBackground(Color.MAGENTA);
-			editButton.setToolTipText("Editar tablero");
 			editButton.addActionListener(this);
 			buttonPanel.add(editButton);
 		}

@@ -11,6 +11,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import src.sersanleo.galaxies.game.generator.GeneratorThread;
@@ -31,7 +32,9 @@ public class GeneratorProgressDialog extends JDialog {
 		mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
 		add(mainContent);
 
-		JLabel label = new JLabel("Generando tablero...");
+		JLabel label = new JLabel(
+				"<html><div style='text-align: center'>Generando tablero...<br>Si tarda demasiado, pruebe a cancelar e inténtalo de nuevo.</div></html>",
+				SwingConstants.CENTER);
 		label.setAlignmentX(Component.CENTER_ALIGNMENT);
 		mainContent.add(label);
 

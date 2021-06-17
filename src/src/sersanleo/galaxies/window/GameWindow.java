@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonGroup;
 import javax.swing.JComboBox;
@@ -43,7 +44,6 @@ import src.sersanleo.galaxies.window.dialog.RankingDialog;
 import src.sersanleo.galaxies.window.screen.BoardCreatorScreen;
 import src.sersanleo.galaxies.window.screen.GameScreen;
 import src.sersanleo.galaxies.window.screen.Screen;
-import src.sersanleo.galaxies.window.screen.SolverScreen;
 
 public class GameWindow extends JFrame implements ActionListener, WindowListener {
 	private static final long serialVersionUID = 1L;
@@ -127,7 +127,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		Arrays.sort(orderedScales);
 		for (float scale : orderedScales) {
 			@SuppressWarnings("serial")
-			JMenuItem scaleMenuItem = new JRadioButtonMenuItem(new AbstractAction((int) Math.round(100 * scale) + "%") {
+			JMenuItem scaleMenuItem = new JRadioButtonMenuItem(new AbstractAction(Math.round(100 * scale) + "%") {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					config.setBoardScale(scale);
@@ -158,20 +158,14 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		statusBar.add(status, BorderLayout.SOUTH);
 		setStatus("Empiece creando o cargando una partida.");
 
-		boolean debug = false;
-		if (debug) {
-			SolverScreen panel;
-			try {
-				panel = new SolverScreen(this, Raetsel.createBoardFromRaetsel(5));
-				setScreen(panel);
-			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
-				e.printStackTrace();
-			}
+		// Icono
+		try {
+			setIconImage(ImageIO.read(GameWindow.class.getResource("/icons/icon.jpg")));
+		} catch (IOException e) {
 		}
 
 		setSize(MIN_WIDTH, MIN_HEIGHT);
 		setResizable(false);
-		setIconImage(Screen.icon("icon.jpg").getImage());
 		setMinimumSize(new Dimension(MIN_WIDTH, MIN_HEIGHT));
 		addWindowListener(this);
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -263,9 +257,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		}
 	}
 
-	private final SpinnerNumberModel raetselSpinnerModel = new SpinnerNumberModel(1, 1, 600, 1);
+	private final SpinnerNumberModel raetselSpinnerModel = new SpinnerNumberModel(1, 1, 538, 1);
 
-	public final void raetsel() throws BoardTooSmallException, IOException, CanNotAddGalaxyException {
+	public final void raetsel() {
 		JSpinner raetselSpinner = new JSpinner(raetselSpinnerModel);
 
 		final JComponent[] inputs = new JComponent[] { new JLabel("ID:"), raetselSpinner };
@@ -274,9 +268,13 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 				JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
 		if (result == JOptionPane.OK_OPTION) {
-			Board board = Raetsel.createBoardFromRaetsel((int) raetselSpinner.getValue());
-			GameScreen screen = new GameScreen(this, new Game(board));
-			setScreen(screen);
+			try {
+				Board board = Raetsel.createBoardFromRaetsel((int) raetselSpinner.getValue());
+				GameScreen screen = new GameScreen(this, new Game(board));
+				setScreen(screen);
+			} catch (Exception e) {
+				setStatus("Error al leer el tablero de Raetsel #" + raetselSpinner.getValue() + "; pruebe otra ID.");
+			}
 		}
 	}
 
@@ -333,11 +331,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 		if (AppConfig.DEBUG)
 			if (eventSource == raetselMenuItem)
-				try {
-					raetsel();
-				} catch (BoardTooSmallException | IOException | CanNotAddGalaxyException e) {
-					setStatus("Datos del tablero corrupto.");
-				}
+				raetsel();
 	}
 
 	@Override

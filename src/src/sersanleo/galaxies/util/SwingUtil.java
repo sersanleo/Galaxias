@@ -6,12 +6,10 @@ import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
-import src.sersanleo.galaxies.window.screen.Screen;
-
 public final class SwingUtil {
 	public static final ImageIcon icon(String name) {
 		try {
-			return new HighQualityIcon(ImageIO.read(Screen.class.getResource("/icons/" + name)));
+			return new HighQualityIcon(ImageIO.read(SwingUtil.class.getResource("/icons/" + name)));
 		} catch (IOException e) {
 			e.printStackTrace();
 			return new ImageIcon();

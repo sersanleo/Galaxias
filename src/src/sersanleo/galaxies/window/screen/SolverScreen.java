@@ -1,5 +1,7 @@
 package src.sersanleo.galaxies.window.screen;
 
+import static src.sersanleo.galaxies.util.SwingUtil.iconButton;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -14,7 +16,6 @@ import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.AppConfig.AppConfigChangeListener;
 import src.sersanleo.galaxies.AppConfig.ConfigParameter;
 import src.sersanleo.galaxies.game.Board;
-import src.sersanleo.galaxies.game.generator.BoardGenerator;
 import src.sersanleo.galaxies.game.rendering.SolverRenderer;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.window.GameWindow;
@@ -29,14 +30,14 @@ public class SolverScreen extends Screen implements AppConfigChangeListener, Act
 	private final BoardView boardView;
 
 	private final JPanel buttonPanel = new JPanel();
-	private final JButton fotoButton = new JButton(icon("camera.png"));
-	private final JButton editButton = new JButton(icon("edit.png"));
+	private final JButton fotoButton = iconButton("camera.png", "Guardar imagen del tablero");
+	private final JButton editButton = iconButton("edit.png", "Editar tablero");
 
 	public SolverScreen(GameWindow window, Board board) {
 		super(window);
 
 		solver = new Solver(board, 2);
-		solver.solve(BoardGenerator.ROWS);
+		solver.solve();
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -51,12 +52,10 @@ public class SolverScreen extends Screen implements AppConfigChangeListener, Act
 		add(buttonPanel);
 
 		fotoButton.setBackground(Color.MAGENTA);
-		fotoButton.setToolTipText("Comprobar validez y jugar");
 		fotoButton.addActionListener(this);
 		buttonPanel.add(fotoButton);
 
 		editButton.setBackground(Color.MAGENTA);
-		editButton.setToolTipText("Editar tablero");
 		editButton.addActionListener(this);
 		buttonPanel.add(editButton);
 
@@ -87,6 +86,11 @@ public class SolverScreen extends Screen implements AppConfigChangeListener, Act
 
 	@Override
 	public void added() {
-		window.setStatus("Vista del resolutor (modo desarrollador)");
+		if (solver.getSolutions() == 0)
+			window.setStatus("[DEBUG] Tablero sin soluciones.");
+		else if (solver.getSolutions() == 1)
+			window.setStatus("[DEBUG] Tablero con una única solución.");
+		else
+			window.setStatus("[DEBUG] Tablero con al menos dos soluciones.");
 	}
 }

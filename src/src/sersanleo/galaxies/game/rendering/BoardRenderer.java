@@ -27,11 +27,12 @@ import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 public class BoardRenderer {
 	private static final boolean DEBUG = false;
 
-	private static final float CELL_SIZE = 45;
-	private static final float EDGE_WIDTH = 1;
-	private static final float SELECTED_EDGE_WIDTH_ADD = 2;
-	private static final float GALAXY_DIAMETER = 13;
-	private static final float GALAXY_BORDER = 1.5f;
+	private static final float SCALE = 0.8f;
+	private static final float CELL_SIZE = 45 * SCALE;
+	private static final float EDGE_WIDTH = 1 * SCALE;
+	private static final float SELECTED_EDGE_WIDTH_ADD = 2 * SCALE;
+	private static final float GALAXY_DIAMETER = 13 * SCALE;
+	private static final float GALAXY_BORDER = 1.5f * SCALE;
 
 	// Valores calculados
 	private static final float SELECTED_EDGE_WIDTH = EDGE_WIDTH + 2 * SELECTED_EDGE_WIDTH_ADD;

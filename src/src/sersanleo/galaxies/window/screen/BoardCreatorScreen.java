@@ -1,5 +1,7 @@
 package src.sersanleo.galaxies.window.screen;
 
+import static src.sersanleo.galaxies.util.SwingUtil.iconButton;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -29,8 +31,8 @@ public class BoardCreatorScreen extends Screen implements ActionListener, AppCon
 	private final BoardView boardView;
 
 	private final JPanel buttonPanel = new JPanel();
-	private final JButton playButton = new JButton(icon("play.png"));
-	private final JButton solveButton = new JButton(icon("solve.png")); // DEBUG
+	private final JButton playButton = iconButton("play.png", "Comprobar validez y jugar");
+	private final JButton solveButton = iconButton("solve.png", "Abrir resolutor"); // DEBUG
 
 	public BoardCreatorScreen(GameWindow window, Board board) {
 		super(window);
@@ -49,14 +51,12 @@ public class BoardCreatorScreen extends Screen implements ActionListener, AppCon
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 		add(buttonPanel);
 
-		playButton.setToolTipText("Comprobar validez y jugar");
 		playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		playButton.addActionListener(this);
 		buttonPanel.add(playButton);
 
 		if (AppConfig.DEBUG) {
 			solveButton.setBackground(Color.MAGENTA);
-			solveButton.setToolTipText("Abrir resolutor");
 			solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 			solveButton.addActionListener(this);
 			buttonPanel.add(solveButton);

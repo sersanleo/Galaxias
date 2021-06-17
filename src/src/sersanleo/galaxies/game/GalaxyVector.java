@@ -6,7 +6,7 @@ public class GalaxyVector extends Vector2f {
 	public GalaxyVector(float x, float y) {
 		super(x, y);
 	}
-	
+
 	public GalaxyVector(Vector2f v) {
 		super(v.x, v.y);
 	}
@@ -24,6 +24,8 @@ public class GalaxyVector extends Vector2f {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
+		if (!(obj instanceof GalaxyVector))
+			return false;
 		GalaxyVector other = (GalaxyVector) obj;
 		if (Math.round(2 * x) != Math.round(2 * other.x))
 			return false;

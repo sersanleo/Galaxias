@@ -12,27 +12,27 @@ import java.util.TreeSet;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
-import src.sersanleo.galaxies.game.GalaxyVector;
 import src.sersanleo.galaxies.game.solver.Solver;
 
 public class BoardGeneratorFixer {
 	protected final BoardGenerator boardGenerator;
 
 	private final Board board;
-	private final GeneratorCell[][] cells;
+	private final Set<Galaxy>[][] cells;
 
 	private SortedSet<Galaxy> concurrent;
 
-	private Set<Galaxy> removed = new HashSet();
+	private Map<Galaxy, Integer> removed = new HashMap<Galaxy, Integer>();
 
+	@SuppressWarnings("unchecked")
 	public BoardGeneratorFixer(BoardGenerator boardGenerator, Solver solver) {
 		this.boardGenerator = boardGenerator;
 
 		board = boardGenerator.board;
-		cells = new GeneratorCell[board.width][board.height];
+		cells = new Set[board.width][board.height];
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++)
-				cells[x][y] = new GeneratorCell(solver.cell(x, y));
+				cells[x][y] = new HashSet<Galaxy>(solver.cell(x, y).getGalaxies());
 	}
 
 	private final void initialize() {
@@ -40,10 +40,10 @@ public class BoardGeneratorFixer {
 
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++) {
-				GeneratorCell cell = cells[x][y];
+				Set<Galaxy> cell = cells[x][y];
 
 				if (cell.size() > 1) {
-					for (Galaxy galaxy1 : cell.getGalaxies()) {
+					for (Galaxy galaxy1 : cell) {
 						Set<Galaxy> set;
 						if (!concurrent.containsKey(galaxy1)) {
 							set = new HashSet<Galaxy>();
@@ -51,7 +51,7 @@ public class BoardGeneratorFixer {
 						} else
 							set = concurrent.get(galaxy1);
 
-						for (Galaxy galaxy2 : cell.getGalaxies()) {
+						for (Galaxy galaxy2 : cell) {
 							if (galaxy1 == galaxy2)
 								continue;
 
@@ -66,27 +66,45 @@ public class BoardGeneratorFixer {
 		this.concurrent.addAll(concurrent.keySet());
 	}
 
-	protected final void remove(Set<Galaxy> galaxiesToRemove, Galaxy keep) {
-		for (int x = 0; x < board.width; x++)
-			for (int y = 0; y < board.height; y++) {
-				Set<Galaxy> galaxies = cells[x][y].galaxies;
-				if (!Collections.disjoint(galaxiesToRemove, galaxies)) { // Tiene galaxias en común
-					galaxiesToRemove.addAll(galaxies);
-					galaxiesToRemove.remove(keep);
-					galaxies.removeAll(galaxiesToRemove);
+	private final void removed(Galaxy galaxy) {
+		removed.put(galaxy, removed.getOrDefault(galaxy, 0) + 1);
+	}
 
-					if (galaxies.size() == 0)
-						boardGenerator.empty(x, y);
-					else if (galaxies.size() == 1)
-						boardGenerator.fill(x, y, keep);
-					else
-						System.err.println("PROBLEMA");
+	protected final void remove(Set<Galaxy> galaxiesToRemove, Galaxy keep) {
+		// Borrar todas las galaxias en galaxiesToRemove y aquellas que aparecen junto a
+		// esas mismas galaxias en cualquier casilla
+
+		boolean changed;
+		do {
+			changed = false;
+
+			for (int x = 0; x < board.width; x++)
+				for (int y = 0; y < board.height; y++) {
+					Set<Galaxy> galaxies = cells[x][y];
+					if (!Collections.disjoint(galaxiesToRemove, galaxies)) { // Tiene galaxias en común
+						galaxiesToRemove.addAll(galaxies);
+						galaxiesToRemove.remove(keep);
+
+						for (Galaxy galaxy : galaxies)
+							if (galaxiesToRemove.contains(galaxy))
+								removed(galaxy);
+
+						galaxies.removeAll(galaxiesToRemove);
+
+						if (galaxies.size() == 0) // Si la casilla se ha quedado vacía, se vacía en el generador
+							boardGenerator.empty(x, y);
+						else if (galaxies.size() == 1) // Si la casilla se ha resuelto, se resuelve en el generador
+							boardGenerator.fill(x, y, keep);
+						else
+							System.err.println("[DEBUG] CASO INESPERADO");
+
+						changed = true;
+					}
 				}
-			}
+		} while (changed);
 
 		concurrent.removeAll(galaxiesToRemove);
 		boardGenerator.board.removeAll(galaxiesToRemove);
-		removed.addAll(galaxiesToRemove);
 	}
 
 	private final void iterate() {
@@ -94,23 +112,26 @@ public class BoardGeneratorFixer {
 		while ((galaxy = pop()) != null) {
 			for (int x = 0; x < board.width; x++)
 				for (int y = 0; y < board.height; y++) {
-					GeneratorCell cell = cells[x][y];
+					Set<Galaxy> cell = cells[x][y];
 
 					if (cell.size() > 1 && cell.contains(galaxy))
-						remove(new HashSet<Galaxy>(cell.getGalaxies()), galaxy);
+						remove(new HashSet<Galaxy>(cell), galaxy);
 				}
 		}
 	}
 
 	private final void updateGeneratorGalaxies() {
 		boardGenerator.updateGalaxies();
-		for (Galaxy g : removed)
-			System.out.println(boardGenerator.galaxies.remove((GalaxyVector) g));
+
+		// Se elimina la posibilidad de que en la siguiente iteración del generador se
+		// use una galaxia eliminada (de lo contrario, entraria en bucle)
+		Galaxy toRemove = removed.entrySet().stream().sorted(Comparator.comparing(x -> x.getValue()))
+				.map(x -> x.getKey()).findFirst().get();
+
+		boardGenerator.galaxies.remove(toRemove);
 	}
 
 	public final void fix() {
-		System.err.println("Arreglando...");
-
 		initialize();
 		iterate();
 		updateGeneratorGalaxies();
@@ -124,31 +145,5 @@ public class BoardGeneratorFixer {
 			return res;
 		} else
 			return null;
-	}
-
-	private final String printFormat(int length) {
-		StringBuilder format = new StringBuilder();
-		for (int i = 0; i < board.width; i++) {
-			format.append("%-");
-			format.append(length);
-			format.append("s ");
-		}
-		format.append("\n");
-		return format.toString();
-	}
-
-	private final String printFormat() {
-		return printFormat((int) (1 + Math.floor(Math.log(board.getGalaxies().size()))));
-	}
-
-	private final void print() {
-		String format = printFormat();
-		for (int y = 0; y < board.height; y++) {
-			String[] data = new String[board.width];
-			for (int x = 0; x < board.width; x++)
-				data[x] = cells[x][y].getGalaxies().size() == 1 ? cells[x][y].getSolution().a + "" : " ";
-			System.out.format(format, data);
-		}
-		System.out.println();
 	}
 }

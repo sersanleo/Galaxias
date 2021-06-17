@@ -115,10 +115,12 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 		buttonPanel.add(solveButton);
 
 		if (AppConfig.DEBUG) {
+			fotoButton.setBackground(Color.MAGENTA);
 			fotoButton.setToolTipText("Guardar imagen del tablero");
 			fotoButton.addActionListener(this);
 			buttonPanel.add(fotoButton);
 
+			editButton.setBackground(Color.MAGENTA);
 			editButton.setToolTipText("Editar tablero");
 			editButton.addActionListener(this);
 			buttonPanel.add(editButton);

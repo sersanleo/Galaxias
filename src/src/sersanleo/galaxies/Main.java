@@ -3,6 +3,8 @@ package src.sersanleo.galaxies;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.UIManager;
+
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
@@ -19,6 +21,13 @@ public final class Main {
 
 	@SuppressWarnings("unused")
 	private static final void window() {
+		// Intenta establecer el Look & Feel del sistema
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		GameWindow window = new GameWindow();
 		window.setVisible(true);
 	}
@@ -49,7 +58,7 @@ public final class Main {
 		while (true) {
 			BoardGenerator generator;
 			try {
-				generator = new BoardGenerator(6,6, 1);
+				generator = new BoardGenerator(15, 15, 1);
 				generator.generate();
 			} catch (BoardTooSmallException e) {
 				e.printStackTrace();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.GalaxyVector;
@@ -18,26 +19,21 @@ public class BoardGenerator {
 	private final float difficulty;
 	public final RandomUtil rnd;
 
-	private final Galaxy[][] rows;
-	public static Galaxy[][] ROWS;
-	private int emptyRows;
-
 	private final int maxGalaxyArea;
 	private final int minGalaxyArea;
 
-	protected final List<GalaxyVector> galaxies;
+	private Galaxy[][] rows;
+	public static Galaxy[][] ROWS;
+	private int emptyRows;
+	protected List<GalaxyVector> galaxies;
 
 	private BoardGenerator(int width, int height, float difficulty, RandomUtil rnd) throws BoardTooSmallException {
 		board = new Board(width, height);
 		this.difficulty = difficulty;
 		this.rnd = rnd;
 
-		rows = new Galaxy[width][height];
-		emptyRows = board.area;
-
 		maxGalaxyArea = (int) Math.ceil(Math.sqrt(board.area));
 		minGalaxyArea = 4;
-		galaxies = initGalaxies();
 	}
 
 	public BoardGenerator(int width, int height, float difficulty, long seed) throws BoardTooSmallException {
@@ -45,7 +41,14 @@ public class BoardGenerator {
 	}
 
 	public BoardGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
-		this(width, height, difficulty, new RandomUtil(-5941963430865247099l));
+		this(width, height, difficulty, new RandomUtil());
+	}
+
+	private final void reset() {
+		rows = new Galaxy[board.width][board.height];
+		emptyRows = board.area;
+		galaxies = initGalaxies();
+		board.clear();
 	}
 
 	private final List<GalaxyVector> initGalaxies() {
@@ -122,6 +125,10 @@ public class BoardGenerator {
 		// Seleccionamos una galaxia que maximice el área
 		GalaxyVector galaxy = null;
 		FloodFillGalaxyGenerator sizeCalculator = null;
+
+		if (galaxies.size() == 0)
+			updateGalaxies();
+
 		for (GalaxyVector currentGalaxy : galaxies) {
 			FloodFillGalaxyGenerator currentSizeCalculator = new FloodFillGalaxyGenerator(this, currentGalaxy);
 			currentSizeCalculator.generate();
@@ -171,7 +178,8 @@ public class BoardGenerator {
 	}
 
 	public final void generate() {
-		int i = 0;
+		reset();
+		int fixedCount = 0;
 		while (true) {
 			while (emptyRows > 0) {
 				GalaxyGenerator galaxyGenerator = getRandomGalaxyGenerator();
@@ -181,25 +189,28 @@ public class BoardGenerator {
 
 			ROWS = rows;
 
-			if (++i == 5) {
-				board.solution = getSolution();
-				break;
-			}
-
 			Solver solver = new Solver(board, 2);
 			solver.solve(rows);
 
 			if (solver.getSolutions() == 1) {
 				board.solution = solver.getSolution();
 				break;
+			} else if (solver.getSolutions() == 0) {
+				System.err.println("[DEBUG] ERROR");
+				board.solution = getSolution();
+				break;
 			} else {
-				if (solver.getSolutions() == 0) {
-					System.err.println("ERROR");
-					System.exit(0);
+				if (++fixedCount >= 3) {
+					reset();
+					fixedCount = 0;
+					if (AppConfig.DEBUG)
+						System.out.println("Creando otro tablero...");
+				} else {
+					if (AppConfig.DEBUG)
+						System.out.println("Fixing...");
+					BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
+					fixer.fix();
 				}
-
-				BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
-				fixer.fix();
 			}
 		}
 	}

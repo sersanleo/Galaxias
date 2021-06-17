@@ -9,7 +9,7 @@ public class FloodFillGalaxyGenerator extends GalaxyGenerator {
 
 	@Override
 	protected boolean isValid(int x, int y) {
-		return true;
+		return !createsHole(x, y);
 	}
 
 	@Override

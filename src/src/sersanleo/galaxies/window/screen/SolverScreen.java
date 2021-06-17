@@ -1,5 +1,6 @@
 package src.sersanleo.galaxies.window.screen;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 
 public class SolverScreen extends Screen implements AppConfigChangeListener, ActionListener {
+	// DEBUG
 	private static final long serialVersionUID = 1L;
 
 	public final Solver solver;
@@ -48,10 +50,12 @@ public class SolverScreen extends Screen implements AppConfigChangeListener, Act
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 		add(buttonPanel);
 
+		fotoButton.setBackground(Color.MAGENTA);
 		fotoButton.setToolTipText("Comprobar validez y jugar");
 		fotoButton.addActionListener(this);
 		buttonPanel.add(fotoButton);
 
+		editButton.setBackground(Color.MAGENTA);
 		editButton.setToolTipText("Editar tablero");
 		editButton.addActionListener(this);
 		buttonPanel.add(editButton);

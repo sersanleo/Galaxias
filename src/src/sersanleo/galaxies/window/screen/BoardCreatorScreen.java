@@ -1,5 +1,6 @@
 package src.sersanleo.galaxies.window.screen;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +55,8 @@ public class BoardCreatorScreen extends Screen implements ActionListener, AppCon
 		buttonPanel.add(playButton);
 
 		if (AppConfig.DEBUG) {
-			solveButton.setToolTipText("Resolver");
+			solveButton.setBackground(Color.MAGENTA);
+			solveButton.setToolTipText("Abrir resolutor");
 			solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 			solveButton.addActionListener(this);
 			buttonPanel.add(solveButton);

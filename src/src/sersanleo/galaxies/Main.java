@@ -21,6 +21,10 @@ public final class Main {
 
 	@SuppressWarnings("unused")
 	private static final void window() {
+		// Para evitar problemas de visualización (bug de Java que depende de la
+		// versión)
+		System.setProperty("sun.java2d.opengl", "true");
+
 		// Intenta establecer el Look & Feel del sistema
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

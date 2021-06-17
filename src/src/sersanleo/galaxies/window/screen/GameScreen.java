@@ -43,7 +43,7 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 	private final JPanel buttonPanel = new JPanel();
 	private final JButton saveAsButton = new JButton(icon("saveAs.png"));
 	private final JButton saveButton = new JButton(icon("save.png"));
-	private final JButton undoButton = new JButton(icon("undo.png"));
+	private final JButton undoButton = iconButton("undo.png", "Deshacer");
 	private final JButton redoButton = new JButton(icon("redo.png"));
 	private final JButton loadStateButton = new JButton(icon("loadState.png"));
 	private final JButton saveStateButton = new JButton(icon("saveState.png"));
@@ -82,7 +82,6 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 		buttonPanel.add(saveButton);
 
 		updateUndoRedoButtons();
-		undoButton.setToolTipText("Deshacer");
 		undoButton.addActionListener(this);
 		buttonPanel.add(undoButton);
 

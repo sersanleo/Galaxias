@@ -3,6 +3,7 @@ package src.sersanleo.galaxies.game;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class Board extends BoundingBoxi {
 		this.area = width * height;
 	}
 
-	public final void addGalaxy(Galaxy galaxy) throws CanNotAddGalaxyException {
+	public final void add(Galaxy galaxy) throws CanNotAddGalaxyException {
 		if (overlaps(galaxy)) {
 			for (Galaxy g : galaxies)
 				if (g.bigBB.overlaps(galaxy))
@@ -46,12 +47,20 @@ public class Board extends BoundingBoxi {
 		solution = null;
 	}
 
-	public final void addGalaxy(float x, float y) throws CanNotAddGalaxyException {
-		addGalaxy(new Galaxy(x, y));
+	public final void add(float x, float y) throws CanNotAddGalaxyException {
+		add(new Galaxy(x, y));
 	}
 
-	public final boolean removeGalaxy(Galaxy galaxy) {
+	public final boolean remove(Galaxy galaxy) {
 		if (galaxies.remove(galaxy)) {
+			solution = null;
+			return true;
+		}
+		return false;
+	}
+
+	public final boolean removeAll(Collection<Galaxy> galaxies) {
+		if (this.galaxies.removeAll(galaxies)) {
 			solution = null;
 			return true;
 		}
@@ -100,7 +109,7 @@ public class Board extends BoundingBoxi {
 
 		int galaxiesLeft = stream.readInt();
 		while (galaxiesLeft-- > 0)
-			board.addGalaxy(stream.readFloat(), stream.readFloat());
+			board.add(stream.readFloat(), stream.readFloat());
 
 		if (stream.readBoolean())
 			board.solution = Solution.createFromStream(board, stream);

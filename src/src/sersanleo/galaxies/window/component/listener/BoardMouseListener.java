@@ -39,8 +39,8 @@ public class BoardMouseListener implements MouseListener {
 
 			try {
 				Galaxy galaxy = new Galaxy(x, y);
-				if (!board.removeGalaxy(galaxy))
-					board.addGalaxy(galaxy);
+				if (!board.remove(galaxy))
+					board.add(galaxy);
 				panel.repaint();
 				window.resetStatus();
 			} catch (CanNotAddGalaxyException exc) {

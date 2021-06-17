@@ -24,8 +24,6 @@ public class GalaxyVector extends Vector2f {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (getClass() != obj.getClass())
-			return false;
 		GalaxyVector other = (GalaxyVector) obj;
 		if (Math.round(2 * x) != Math.round(2 * other.x))
 			return false;

@@ -151,7 +151,7 @@ public abstract class GalaxyGenerator {
 	public final void add() {
 		Galaxy galaxy = new Galaxy(this.galaxy);
 		try {
-			generator.board.addGalaxy(galaxy);
+			generator.board.add(galaxy);
 
 			for (Vector2i v : visited)
 				generator.fill(v.x, v.y, galaxy);

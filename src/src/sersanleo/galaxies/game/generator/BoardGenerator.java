@@ -7,6 +7,7 @@ import java.util.List;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.GalaxyVector;
+import src.sersanleo.galaxies.game.Solution;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.RandomUtil;
@@ -24,7 +25,7 @@ public class BoardGenerator {
 	private final int maxGalaxyArea;
 	private final int minGalaxyArea;
 
-	private final List<GalaxyVector> galaxies;
+	protected final List<GalaxyVector> galaxies;
 
 	private BoardGenerator(int width, int height, float difficulty, RandomUtil rnd) throws BoardTooSmallException {
 		board = new Board(width, height);
@@ -44,7 +45,7 @@ public class BoardGenerator {
 	}
 
 	public BoardGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
-		this(width, height, difficulty, new RandomUtil());
+		this(width, height, difficulty, new RandomUtil(-5941963430865247099l));
 	}
 
 	private final List<GalaxyVector> initGalaxies() {
@@ -100,10 +101,10 @@ public class BoardGenerator {
 	}
 
 	protected void fill(int x, int y, Galaxy value) {
-		if (isEmpty(x, y)) {
-			rows[x][y] = value;
+		boolean empty = isEmpty(x, y);
+		rows[x][y] = value;
+		if (empty) {
 			emptyRows--;
-
 			for (int galaxyX = 2 * x - 1; galaxyX <= 2 * x + 1; galaxyX++)
 				for (int galaxyY = 2 * y - 1; galaxyY <= 2 * y + 1; galaxyY++)
 					galaxies.remove(new GalaxyVector(galaxyX / 2f, galaxyY / 2f));
@@ -151,12 +152,38 @@ public class BoardGenerator {
 		return new ParameterizedGalaxyGenerator(this, galaxy, area, difficulty);
 	}
 
+	private final Solution getSolution() {
+		Galaxy[][] solution = rows;
+
+		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				if (solution[x][y] != solution[x][y + 1])
+					horizontalEdges[x][y] = true;
+
+		boolean[][] verticalEdges = new boolean[board.width - 1][board.height];
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				if (solution[x][y] != solution[x + 1][y])
+					verticalEdges[x][y] = true;
+
+		return new Solution(board, horizontalEdges, verticalEdges);
+	}
+
 	public final void generate() {
+		int i = 0;
 		while (true) {
 			while (emptyRows > 0) {
 				GalaxyGenerator galaxyGenerator = getRandomGalaxyGenerator();
 				galaxyGenerator.generate();
 				galaxyGenerator.add();
+			}
+
+			ROWS = rows;
+
+			if (++i == 5) {
+				board.solution = getSolution();
+				break;
 			}
 
 			Solver solver = new Solver(board, 2);
@@ -171,7 +198,6 @@ public class BoardGenerator {
 					System.exit(0);
 				}
 
-				ROWS = rows;
 				BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
 				fixer.fix();
 			}

@@ -24,16 +24,16 @@ public class Raetsel {
 				case '-':
 					break;
 				case '0':
-					board.addGalaxy(x, y);
+					board.add(x, y);
 					break;
 				case '1':
-					board.addGalaxy(x + 0.5f, y);
+					board.add(x + 0.5f, y);
 					break;
 				case '2':
-					board.addGalaxy(x, y + 0.5f);
+					board.add(x, y + 0.5f);
 					break;
 				case '3':
-					board.addGalaxy(x + 0.5f, y + 0.5f);
+					board.add(x + 0.5f, y + 0.5f);
 					break;
 				}
 			}

@@ -2,6 +2,7 @@ package src.sersanleo.galaxies.game.generator;
 
 import javax.swing.JDialog;
 
+import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.window.GameWindow;
@@ -13,6 +14,9 @@ public class GeneratorThread extends Thread {
 	private final int width;
 	private final int height;
 	private final float difficulty;
+
+	private Board board = null;
+	private boolean success = false;
 
 	public GeneratorThread(GameWindow window, JDialog dialog, int width, int height, float difficulty) {
 		this.window = window;
@@ -27,8 +31,8 @@ public class GeneratorThread extends Thread {
 		try {
 			BoardGenerator generator = new BoardGenerator(width, height, difficulty);
 			generator.generate();
-			GameScreen screen = new GameScreen(window, new Game(generator.board));
-			window.setScreen(screen);
+			board = generator.board;
+			success = true;
 		} catch (BoardTooSmallException e) {
 		}
 		done();
@@ -37,5 +41,10 @@ public class GeneratorThread extends Thread {
 	public final void done() {
 		dialog.setVisible(false);
 		dialog.dispose();
+
+		if (success && board != null) {
+			GameScreen screen = new GameScreen(window, new Game(board));
+			window.setScreen(screen);
+		}
 	}
 }

@@ -44,7 +44,7 @@ public class BoardGenerator {
 	}
 
 	public BoardGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
-		this(width, height, difficulty, new RandomUtil(6671605488697341695l));
+		this(width, height, difficulty, new RandomUtil());
 	}
 
 	private final List<GalaxyVector> initGalaxies() {
@@ -58,7 +58,7 @@ public class BoardGenerator {
 		return res;
 	}
 
-	private final void updateGalaxies() {
+	protected final void updateGalaxies() {
 		for (int x = 0; x < 2 * board.width - 1; x++)
 			for (int y = 0; y < 2 * board.height - 1; y++) {
 				GalaxyVector galaxy = new GalaxyVector(x / 2f, y / 2f);
@@ -166,10 +166,14 @@ public class BoardGenerator {
 				board.solution = solver.getSolution();
 				break;
 			} else {
+				if (solver.getSolutions() == 0) {
+					System.err.println("ERROR");
+					System.exit(0);
+				}
+
+				ROWS = rows;
 				BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
 				fixer.fix();
-				ROWS = rows;
-				break;
 			}
 		}
 	}

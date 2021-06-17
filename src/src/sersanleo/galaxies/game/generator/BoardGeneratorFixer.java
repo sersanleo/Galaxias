@@ -15,7 +15,7 @@ import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class BoardGeneratorFixer {
-	private final BoardGenerator boardGenerator;
+	protected final BoardGenerator boardGenerator;
 
 	private final Board board;
 	private final GeneratorCell[][] cells;
@@ -69,6 +69,8 @@ public class BoardGeneratorFixer {
 
 					if (cell.size() > 1 && cell.contains(galaxy)) {
 						cell.solve(galaxy);
+						print();
+						System.out.println();
 					}
 				}
 		}
@@ -79,8 +81,7 @@ public class BoardGeneratorFixer {
 
 		initialize();
 		iterate();
-
-		System.out.println(concurrent);
+		boardGenerator.updateGalaxies();
 	}
 
 	private final Galaxy pop() {
@@ -95,5 +96,31 @@ public class BoardGeneratorFixer {
 
 	protected final GeneratorCell cell(Vector2i v) {
 		return cells[v.x][v.y];
+	}
+
+	private final String printFormat(int length) {
+		StringBuilder format = new StringBuilder();
+		for (int i = 0; i < board.width; i++) {
+			format.append("%-");
+			format.append(length);
+			format.append("s ");
+		}
+		format.append("\n");
+		return format.toString();
+	}
+
+	private final String printFormat() {
+		return printFormat((int) (1 + Math.floor(Math.log(board.getGalaxies().size()))));
+	}
+
+	private final void print() {
+		String format = printFormat();
+		for (int y = 0; y < board.height; y++) {
+			String[] data = new String[board.width];
+			for (int x = 0; x < board.width; x++)
+				data[x] = cells[x][y].getGalaxies().size() == 1 ? cells[x][y].getSolution().a + "" : " ";
+			System.out.format(format, data);
+		}
+		System.out.println();
 	}
 }

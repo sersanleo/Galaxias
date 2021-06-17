@@ -12,44 +12,48 @@ import src.sersanleo.galaxies.util.Vector2i;
 public class GeneratorCell extends Vector2i {
 	private final BoardGeneratorFixer fixer;
 	private final Set<Galaxy> galaxies;
+	protected boolean solved;
 
 	protected GeneratorCell(BoardGeneratorFixer fixer, SolverCell cell) {
 		super(cell.x, cell.y);
 
 		this.fixer = fixer;
 		galaxies = new HashSet<Galaxy>(cell.getGalaxies());
-	}
-
-	private final void empty() {
-		// vaciar esta casilla y simetricas
-		Iterator<Galaxy> it = galaxies.iterator();
-		while (it.hasNext()) {
-			Galaxy galaxy = it.next();
-			
-			it.remove();
-			symmetric(galaxy).galaxies.remove(galaxy);
-		}
+		solved = galaxies.size() == 1;
 	}
 
 	protected final void solve(Galaxy solution) {
-		Iterator<Galaxy> it = galaxies.iterator();
-		while (it.hasNext()) {
-			Galaxy galaxy = it.next();
-			if (galaxy != solution) {
-				it.remove();
-				symmetric(galaxy).empty();
+		if (!solved) {
+			solved = true;
+
+			if (solution != null)
+				solveSymmetric(solution, solution);
+			else
+				fixer.boardGenerator.empty(x, y);
+
+			Iterator<Galaxy> it = galaxies.iterator();
+			while (it.hasNext()) {
+				Galaxy galaxy = it.next();
+				if (galaxy != solution) {
+					it.remove();
+					solveSymmetric(galaxy, null);
+				}
 			}
 		}
-
-		symmetric(solution).solve(solution);
 	}
 
-	private final GeneratorCell symmetric(Galaxy galaxy) {
-		return fixer.cell(galaxy.symmetric(this).round());
+	private final void solveSymmetric(Galaxy galaxy, Galaxy solution) {
+		GeneratorCell symmetric = fixer.cell(galaxy.symmetric(this).round());
+		if (symmetric != null)
+			symmetric.solve(solution);
 	}
 
 	public final Set<Galaxy> getGalaxies() {
 		return Collections.unmodifiableSet(galaxies);
+	}
+
+	public final Galaxy getSolution() {
+		return galaxies.iterator().next();
 	}
 
 	public final boolean contains(Galaxy galaxy) {

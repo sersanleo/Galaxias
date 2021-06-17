@@ -57,7 +57,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 	private final static int MIN_BOARD_SIZE = 4;
 	private final static int MAX_BOARD_SIZE = 18;
-	private final static int DEFAULT_BOARD_SIZE = 12;
+	private final static int DEFAULT_BOARD_WIDTH = 18;
+	private final static int DEFAULT_BOARD_HEIGHT = 16;
 
 	public final AppConfig config;
 
@@ -208,9 +209,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		setScreen(screen, false);
 	}
 
-	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, MIN_BOARD_SIZE,
+	private final SpinnerNumberModel widthSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_WIDTH, MIN_BOARD_SIZE,
 			MAX_BOARD_SIZE, 1);
-	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_SIZE, MIN_BOARD_SIZE,
+	private final SpinnerNumberModel heightSpinnerModel = new SpinnerNumberModel(DEFAULT_BOARD_HEIGHT, MIN_BOARD_SIZE,
 			MAX_BOARD_SIZE, 1);
 
 	public final void createNewBoard() {

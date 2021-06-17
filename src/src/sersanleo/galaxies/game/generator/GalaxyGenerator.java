@@ -12,7 +12,7 @@ import src.sersanleo.galaxies.util.Vector2f;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public abstract class GalaxyGenerator {
-	private final PuzzleGenerator generator;
+	private final BoardGenerator generator;
 	private final Vector2f galaxy;
 
 	private int width = 0;
@@ -21,7 +21,7 @@ public abstract class GalaxyGenerator {
 	private final List<Vector2i> visited = new ArrayList<Vector2i>();
 	protected final List<Vector2i> next = new ArrayList<Vector2i>();
 
-	protected GalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy) {
+	protected GalaxyGenerator(BoardGenerator generator, Vector2f galaxy) {
 		this.generator = generator;
 		this.galaxy = galaxy;
 	}

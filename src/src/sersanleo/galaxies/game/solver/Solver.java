@@ -51,7 +51,7 @@ public class Solver {
 	}
 
 	public final SolverCell cell(Vector2i v) {
-		return cell(v.x, v.y);
+		return cells[v.x][v.y];
 	}
 
 	private final boolean saveSolution() {
@@ -244,7 +244,7 @@ public class Solver {
 				saveSolution();
 			else {
 				backtracking(solution);
-				// merge();
+				merge();
 			}
 		} catch (SolutionNotFoundException e) {
 		}

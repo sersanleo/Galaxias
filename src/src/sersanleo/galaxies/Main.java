@@ -6,7 +6,7 @@ import java.io.IOException;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.game.generator.PuzzleGenerator;
+import src.sersanleo.galaxies.game.generator.BoardGenerator;
 import src.sersanleo.galaxies.game.rendering.SolverRenderer;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.Raetsel;
@@ -47,9 +47,9 @@ public final class Main {
 	@SuppressWarnings("unused")
 	private static final void testGenerator() {
 		while (true) {
-			PuzzleGenerator generator;
+			BoardGenerator generator;
 			try {
-				generator = new PuzzleGenerator(6,6, 1);
+				generator = new BoardGenerator(6,6, 1);
 				generator.generate();
 			} catch (BoardTooSmallException e) {
 				e.printStackTrace();

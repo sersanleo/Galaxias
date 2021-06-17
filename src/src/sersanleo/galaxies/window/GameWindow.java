@@ -1,6 +1,7 @@
 package src.sersanleo.galaxies.window;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,9 +12,13 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,6 +27,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
@@ -36,11 +42,11 @@ import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
-import src.sersanleo.galaxies.game.generator.PuzzleGenerator;
+import src.sersanleo.galaxies.game.generator.GeneratorThread;
 import src.sersanleo.galaxies.util.Raetsel;
-import src.sersanleo.galaxies.window.screen.Screen;
 import src.sersanleo.galaxies.window.screen.BoardCreatorScreen;
 import src.sersanleo.galaxies.window.screen.GameScreen;
+import src.sersanleo.galaxies.window.screen.Screen;
 import src.sersanleo.galaxies.window.screen.SolverScreen;
 
 public class GameWindow extends JFrame implements ActionListener, WindowListener {
@@ -261,13 +267,38 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 			int height = (int) heightSpinner.getValue();
 			float difficulty = DIFFICULTY_CHOICES.get(difficultyComboBox.getSelectedItem());
 
-			try {
-				PuzzleGenerator generator = new PuzzleGenerator(width, height, difficulty);
-				GameScreen screen = new GameScreen(this, new Game(generator.generate()));
-				setScreen(screen);
-			} catch (BoardTooSmallException e) {
-			}
+			generateNewBoard(width, height, difficulty);
 		}
+	}
+
+	public final void generateNewBoard(int width, int height, float difficulty) {
+		JDialog dialog = new JDialog(this, "Generando tablero...", true);
+		dialog.setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS));
+
+		JLabel label = new JLabel("Generando tablero...");
+		label.setAlignmentX(Component.CENTER_ALIGNMENT);
+		dialog.add(label);
+
+		JProgressBar progressBar = new JProgressBar();
+		progressBar.setIndeterminate(true);
+		dialog.add(progressBar);
+
+		GeneratorThread thread = new GeneratorThread(this, dialog, width, height, difficulty);
+		JButton cancelButton = new JButton(new AbstractAction("Cancelar") {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				thread.stop();
+				thread.done();
+			}
+		});
+		cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		dialog.add(cancelButton);
+
+		dialog.setResizable(false);
+		dialog.pack();
+		dialog.setLocationRelativeTo(this);
+		thread.start();
+		dialog.setVisible(true);
 	}
 
 	private final SpinnerNumberModel raetselSpinnerModel = new SpinnerNumberModel(1, 1, 600, 1);

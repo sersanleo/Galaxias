@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import src.sersanleo.galaxies.AppConfig;
+
 public final class RandomUtil {
 	public final long seed;
 
@@ -13,8 +15,8 @@ public final class RandomUtil {
 	public RandomUtil(long seed) {
 		this.seed = seed;
 		this.random = new Random(seed);
-
-		System.out.println("RandomUtil creado con semilla " + seed);
+		if (AppConfig.DEBUG)
+			System.out.println("RandomUtil creado con semilla " + seed);
 	}
 
 	public RandomUtil() {

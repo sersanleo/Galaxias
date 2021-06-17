@@ -12,12 +12,13 @@ import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.RandomUtil;
 import src.sersanleo.galaxies.util.Vector2i;
 
-public class PuzzleGenerator {
+public class BoardGenerator {
 	public final Board board;
 	private final float difficulty;
 	public final RandomUtil rnd;
 
 	private final Galaxy[][] rows;
+	public static Galaxy[][] ROWS;
 	private int emptyRows;
 
 	private final int maxGalaxyArea;
@@ -25,7 +26,7 @@ public class PuzzleGenerator {
 
 	private final List<GalaxyVector> galaxies;
 
-	private PuzzleGenerator(int width, int height, float difficulty, RandomUtil rnd) throws BoardTooSmallException {
+	private BoardGenerator(int width, int height, float difficulty, RandomUtil rnd) throws BoardTooSmallException {
 		board = new Board(width, height);
 		this.difficulty = difficulty;
 		this.rnd = rnd;
@@ -38,12 +39,12 @@ public class PuzzleGenerator {
 		galaxies = initGalaxies();
 	}
 
-	public PuzzleGenerator(int width, int height, float difficulty, long seed) throws BoardTooSmallException {
+	public BoardGenerator(int width, int height, float difficulty, long seed) throws BoardTooSmallException {
 		this(width, height, difficulty, new RandomUtil(seed));
 	}
 
-	public PuzzleGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
-		this(width, height, difficulty, new RandomUtil());
+	public BoardGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
+		this(width, height, difficulty, new RandomUtil(6671605488697341695l));
 	}
 
 	private final List<GalaxyVector> initGalaxies() {
@@ -145,11 +146,12 @@ public class PuzzleGenerator {
 		/*
 		 * if (difficulty > 0.999f) area = skeletonArea; else area = randomArea;
 		 */
-		System.out.println("skeleton=" + skeletonArea + " random=" + randomArea + " area=" + area);
+		// System.out.println("skeleton=" + skeletonArea + " random=" + randomArea + "
+		// area=" + area);
 		return new ParameterizedGalaxyGenerator(this, galaxy, area, difficulty);
 	}
 
-	public final Board generate() {
+	public final void generate() {
 		while (true) {
 			while (emptyRows > 0) {
 				GalaxyGenerator galaxyGenerator = getRandomGalaxyGenerator();
@@ -164,12 +166,11 @@ public class PuzzleGenerator {
 				board.solution = solver.getSolution();
 				break;
 			} else {
-				board.solution = solver.getSolution();
-				System.err.println("COMPLETAR LUEGO");
+				BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
+				fixer.fix();
+				ROWS = rows;
 				break;
 			}
 		}
-
-		return board;
 	}
 }

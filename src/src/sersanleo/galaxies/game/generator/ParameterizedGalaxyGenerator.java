@@ -12,7 +12,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 	private final float b;
 	private final float c;
 
-	public ParameterizedGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy, int minWidth, int maxWidth,
+	public ParameterizedGalaxyGenerator(BoardGenerator generator, Vector2f galaxy, int minWidth, int maxWidth,
 			int minHeight, int maxHeight, int desiredArea, float difficulty) {
 		super(generator, galaxy);
 
@@ -26,7 +26,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 		this.c = 0.7f - difficulty * 0.3f; // Apertura de la campana
 	}
 
-	public ParameterizedGalaxyGenerator(PuzzleGenerator generator, Vector2f galaxy, int desiredArea, float difficulty) {
+	public ParameterizedGalaxyGenerator(BoardGenerator generator, Vector2f galaxy, int desiredArea, float difficulty) {
 		this(generator, galaxy, 0, Integer.MAX_VALUE, 0, Integer.MAX_VALUE, desiredArea, difficulty);
 	}
 

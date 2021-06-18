@@ -62,7 +62,7 @@ public final class Main {
 		while (true) {
 			BoardGenerator generator;
 			try {
-				generator = new BoardGenerator(15, 15, 1);
+				generator = new BoardGenerator(9, 9, 1);
 				generator.generate();
 			} catch (BoardTooSmallException e) {
 				e.printStackTrace();
@@ -81,7 +81,7 @@ public final class Main {
 
 	@SuppressWarnings("unused")
 	private static final void testGuardar() {
-		for (int level = 66; level < 503; level++) {
+		for (int level = 66; level < 538; level++) {
 			testGuardar(level);
 			try {
 				Thread.sleep(1000);

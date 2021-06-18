@@ -53,8 +53,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 	private final static int MIN_BOARD_SIZE = 4;
 	private final static int MAX_BOARD_SIZE = 18;
-	private final static int DEFAULT_BOARD_WIDTH = 12;
-	private final static int DEFAULT_BOARD_HEIGHT = 12;
+	private final static int DEFAULT_BOARD_WIDTH = 15;
+	private final static int DEFAULT_BOARD_HEIGHT = 15;
 
 	private final static float[] SCALES = new float[] { 1f, 0.5f, 0.75f, 1.25f, 1.5f };
 
@@ -126,8 +126,9 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		float[] orderedScales = SCALES.clone();
 		Arrays.sort(orderedScales);
 		for (float scale : orderedScales) {
-			@SuppressWarnings("serial")
 			JMenuItem scaleMenuItem = new JRadioButtonMenuItem(new AbstractAction(Math.round(100 * scale) + "%") {
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
 					config.setBoardScale(scale);

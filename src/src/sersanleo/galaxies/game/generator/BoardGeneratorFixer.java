@@ -4,131 +4,110 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.solver.Solver;
 
 public class BoardGeneratorFixer {
-	protected final BoardGenerator boardGenerator;
+	protected final BoardGenerator generator;
 
 	private final Board board;
-	private final Set<Galaxy>[][] cells;
+	protected final GeneratorCell[][] cells;
 
-	private SortedSet<Galaxy> concurrent;
+	private Map<Galaxy, Set<Galaxy>> graph = new HashMap<Galaxy, Set<Galaxy>>();
+	private Map<Galaxy, Integer> areas = new HashMap<Galaxy, Integer>();
+	private Map<Galaxy, Integer> pureAreas = new HashMap<Galaxy, Integer>();
 
-	private Map<Galaxy, Integer> removed = new HashMap<Galaxy, Integer>();
+	private Set<Galaxy> removed = new HashSet<Galaxy>();
 
-	@SuppressWarnings("unchecked")
-	public BoardGeneratorFixer(BoardGenerator boardGenerator, Solver solver) {
-		this.boardGenerator = boardGenerator;
+	public BoardGeneratorFixer(BoardGenerator generator, Solver solver) {
+		this.generator = generator;
 
-		board = boardGenerator.board;
-		cells = new Set[board.width][board.height];
+		board = generator.board;
+		cells = new GeneratorCell[board.width][board.height];
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++)
-				cells[x][y] = new HashSet<Galaxy>(solver.cell(x, y).getGalaxies());
+				cells[x][y] = new GeneratorCell(this, solver.cell(x, y));
 	}
 
 	private final void initialize() {
-		Map<Galaxy, Set<Galaxy>> concurrent = new HashMap<Galaxy, Set<Galaxy>>();
-
+		// Creamos grafo
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++) {
 				Set<Galaxy> cell = cells[x][y];
 
 				if (cell.size() > 1) {
 					for (Galaxy galaxy1 : cell) {
-						Set<Galaxy> set;
-						if (!concurrent.containsKey(galaxy1)) {
-							set = new HashSet<Galaxy>();
-							concurrent.put(galaxy1, set);
+						Set<Galaxy> connections;
+						if (!graph.containsKey(galaxy1)) {
+							connections = new HashSet<Galaxy>();
+							graph.put(galaxy1, connections);
 						} else
-							set = concurrent.get(galaxy1);
+							connections = graph.get(galaxy1);
 
 						for (Galaxy galaxy2 : cell) {
 							if (galaxy1 == galaxy2)
 								continue;
 
-							set.add(galaxy2);
+							connections.add(galaxy2);
 						}
 					}
 				}
 			}
 
-		this.concurrent = new TreeSet<Galaxy>(
-				Comparator.comparing(x -> concurrent.get(x).size()).thenComparing(x -> x.hashCode()));
-		this.concurrent.addAll(concurrent.keySet());
-	}
+		// Obtenemos las propiedades de los vértices de los grafos: área (nº de casillas
+		// donde podría estar la galaxia) y área pura (nº de casillas donde es seguro
+		// que tiene que estar la galaxia)
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++) {
+				Set<Galaxy> galaxies = cells[x][y];
 
-	private final void removed(Galaxy galaxy) {
-		removed.put(galaxy, removed.getOrDefault(galaxy, 0) + 1);
-	}
-
-	protected final void remove(Set<Galaxy> galaxiesToRemove, Galaxy keep) {
-		// Borrar todas las galaxias en galaxiesToRemove y aquellas que aparecen junto a
-		// esas mismas galaxias en cualquier casilla
-
-		boolean changed;
-		do {
-			changed = false;
-
-			for (int x = 0; x < board.width; x++)
-				for (int y = 0; y < board.height; y++) {
-					Set<Galaxy> galaxies = cells[x][y];
-					if (!Collections.disjoint(galaxiesToRemove, galaxies)) { // Tiene galaxias en común
-						galaxiesToRemove.addAll(galaxies);
-						galaxiesToRemove.remove(keep);
-
-						for (Galaxy galaxy : galaxies)
-							if (galaxiesToRemove.contains(galaxy))
-								removed(galaxy);
-
-						galaxies.removeAll(galaxiesToRemove);
-
-						if (galaxies.size() == 0) // Si la casilla se ha quedado vacía, se vacía en el generador
-							boardGenerator.empty(x, y);
-						else if (galaxies.size() == 1) // Si la casilla se ha resuelto, se resuelve en el generador
-							boardGenerator.fill(x, y, keep);
-						else
-							System.err.println("[DEBUG] CASO INESPERADO");
-
-						changed = true;
+				if (galaxies.size() == 1) {
+					Galaxy galaxy = cells[x][y].iterator().next();
+					if (graph.containsKey(galaxy)) {
+						pureAreas.put(galaxy, pureAreas.getOrDefault(galaxy, 0) + 1);
+						areas.put(galaxy, areas.getOrDefault(galaxy, 0) + 1);
 					}
-				}
-		} while (changed);
+				} else
+					for (Galaxy galaxy : galaxies)
+						if (graph.containsKey(galaxy))
+							areas.put(galaxy, areas.getOrDefault(galaxy, 0) + 1);
+			}
+	}
 
-		concurrent.removeAll(galaxiesToRemove);
-		boardGenerator.board.removeAll(galaxiesToRemove);
+	private final void remove(Galaxy galaxy) {
+		System.out.println("Borrando " + galaxy);
+		removed.add(galaxy);
+
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height; y++) {
+				GeneratorCell cell = cells[x][y];
+				cell.remove(galaxy);
+			}
+
+		generator.board.remove(galaxy);
 	}
 
 	private final void iterate() {
-		Galaxy galaxy;
-		while ((galaxy = pop()) != null) {
-			for (int x = 0; x < board.width; x++)
-				for (int y = 0; y < board.height; y++) {
-					Set<Galaxy> cell = cells[x][y];
+		// Buscar todos los ciclos del grafo
+		Set<Set<Galaxy>> cycles = new CycleFinder().find();
+		for (Set<Galaxy> cycle : cycles)
+			if (Collections.disjoint(cycle, removed)) { // Aun no se ha borrado ninguna galaxia del ciclo
+				Galaxy galaxy = cycle.stream().filter(x -> pureAreas.get(x) > 1)
+						.sorted(Comparator.comparing(x -> -areas.get(x))).findFirst().get();
+				remove(galaxy);
+			}
 
-					if (cell.size() > 1 && cell.contains(galaxy))
-						remove(new HashSet<Galaxy>(cell), galaxy);
-				}
-		}
 	}
 
 	private final void updateGeneratorGalaxies() {
-		boardGenerator.updateGalaxies();
+		generator.updateGalaxies();
 
-		// Se elimina la posibilidad de que en la siguiente iteración del generador se
-		// use una galaxia eliminada (de lo contrario, entraria en bucle)
-		Galaxy toRemove = removed.entrySet().stream().sorted(Comparator.comparing(x -> x.getValue()))
-				.map(x -> x.getKey()).findFirst().get();
-
-		boardGenerator.galaxies.remove(toRemove);
+		// No se deben generar las galaxias recién eliminadas
+		generator.galaxies.removeAll(removed);
 	}
 
 	public final void fix() {
@@ -137,13 +116,32 @@ public class BoardGeneratorFixer {
 		updateGeneratorGalaxies();
 	}
 
-	private final Galaxy pop() {
-		if (concurrent.size() > 1) {
-			Iterator<Galaxy> it = concurrent.iterator();
-			Galaxy res = it.next();
-			it.remove();
-			return res;
-		} else
+	private final class CycleFinder {
+		private Set<Set<Galaxy>> cycles;
+
+		private Galaxy goal;
+
+		private final Set<Galaxy> find(Galaxy step, Set<Galaxy> path, Set<Galaxy> visited) {
+			visited.add(step);
+			Set<Galaxy> visitedNow = graph.get(step);
+
+			path.addAll();
+
+			visited.addAll(visitedNow);
 			return null;
+		}
+
+		private final void find(Galaxy start) {
+			find(start, new HashSet<Galaxy>(), new HashSet<Galaxy>());
+		}
+
+		protected final Set<Set<Galaxy>> find() {
+			cycles = new HashSet<Set<Galaxy>>();
+
+			for (Galaxy node : graph.keySet())
+				find(node);
+
+			return cycles;
+		}
 	}
 }

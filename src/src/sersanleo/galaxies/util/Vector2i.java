@@ -11,6 +11,10 @@ public class Vector2i {
 		this.y = y;
 	}
 
+	public Vector2i(Vector2i v) {
+		this(v.x, v.y);
+	}
+
 	public final static Vector2f mean(Collection<Vector2i> vectors) {
 		float x = 0;
 		float y = 0;

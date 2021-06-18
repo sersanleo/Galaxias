@@ -46,8 +46,9 @@ public class GeneratorProgressDialog extends JDialog {
 
 		mainContent.add(Box.createVerticalStrut(8));
 
-		@SuppressWarnings("serial")
 		JButton cancelButton = new JButton(new AbstractAction("Cancelar") {
+			private static final long serialVersionUID = 1L;
+
 			@SuppressWarnings("deprecation")
 			@Override
 			public void actionPerformed(ActionEvent arg0) {

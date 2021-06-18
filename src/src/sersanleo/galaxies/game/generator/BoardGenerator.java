@@ -1,5 +1,6 @@
 package src.sersanleo.galaxies.game.generator;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,12 +9,16 @@ import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.GalaxyVector;
+import src.sersanleo.galaxies.game.Solution;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
+import src.sersanleo.galaxies.game.rendering.SolverRenderer;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.RandomUtil;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class BoardGenerator {
+	private final static int MAX_FIXES = 30;
+
 	public final Board board;
 	private final float difficulty;
 	public final RandomUtil rnd;
@@ -22,6 +27,7 @@ public class BoardGenerator {
 	private final int minGalaxyArea;
 
 	private Galaxy[][] rows;
+	public static Galaxy[][] ROWS;
 	private int emptyRows;
 	protected List<GalaxyVector> galaxies;
 
@@ -39,7 +45,7 @@ public class BoardGenerator {
 	}
 
 	public BoardGenerator(int width, int height, float difficulty) throws BoardTooSmallException {
-		this(width, height, difficulty, new RandomUtil());
+		this(width, height, difficulty, new RandomUtil(2305597086205025227l));
 	}
 
 	private final void reset() {
@@ -112,11 +118,19 @@ public class BoardGenerator {
 		}
 	}
 
+	protected void fill(Vector2i v, Galaxy value) {
+		fill(v.x, v.y, value);
+	}
+
 	protected void empty(int x, int y) {
 		if (isFilled(x, y)) {
 			rows[x][y] = null;
 			emptyRows++;
 		}
+	}
+
+	protected void empty(Vector2i v) {
+		empty(v.x, v.y);
 	}
 
 	private final GalaxyGenerator getRandomGalaxyGenerator() {
@@ -157,8 +171,25 @@ public class BoardGenerator {
 		return new ParameterizedGalaxyGenerator(this, galaxy, area, difficulty);
 	}
 
+	private final Solution getSolution() {
+		Galaxy[][] solution = rows;
+		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				if (solution[x][y] != solution[x][y + 1])
+					horizontalEdges[x][y] = true;
+		boolean[][] verticalEdges = new boolean[board.width - 1][board.height];
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				if (solution[x][y] != solution[x + 1][y])
+					verticalEdges[x][y] = true;
+		return new Solution(board, horizontalEdges, verticalEdges);
+	}
+
 	public final void generate() {
 		reset();
+
+		int i = 0;
 		int fixedCount = 0;
 		while (true) {
 			while (emptyRows > 0) {
@@ -167,23 +198,33 @@ public class BoardGenerator {
 				galaxyGenerator.add();
 			}
 
+			ROWS = rows;
+
 			Solver solver = new Solver(board, 2);
 			solver.solve(rows);
+			// new SolverRenderer(solver).save(new File("F:\\Sergio\\Desktop\\TABLEROS\\" +
+			// (++i) + ".jpg"));
 
 			if (solver.getSolutions() == 1) {
 				board.solution = solver.getSolution();
 				break;
 			} else {
-				if (++fixedCount >= 3) {
+				if (++fixedCount >= MAX_FIXES) {
 					reset();
 					fixedCount = 0;
+
 					if (AppConfig.DEBUG)
 						System.out.println("Creando otro tablero...");
 				} else {
 					if (AppConfig.DEBUG)
 						System.out.println("Fixing...");
+
 					BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
 					fixer.fix();
+					if (++i == 1) {
+						board.solution = getSolution();
+						break;
+					}
 				}
 			}
 		}

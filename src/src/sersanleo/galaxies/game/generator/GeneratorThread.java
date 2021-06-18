@@ -9,7 +9,6 @@ import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.screen.GameScreen;
 
 public class GeneratorThread extends Thread {
-	private final GameWindow window;
 	private final JDialog dialog;
 	private final int width;
 	private final int height;
@@ -18,8 +17,7 @@ public class GeneratorThread extends Thread {
 	private Board board = null;
 	private boolean success = false;
 
-	public GeneratorThread(GameWindow window, JDialog dialog, int width, int height, float difficulty) {
-		this.window = window;
+	public GeneratorThread(JDialog dialog, int width, int height, float difficulty) {
 		this.dialog = dialog;
 		this.width = width;
 		this.height = height;
@@ -38,13 +36,16 @@ public class GeneratorThread extends Thread {
 		done();
 	}
 
-	public final void done() {
-		dialog.setVisible(false);
-		dialog.dispose();
+	public final boolean success() {
+		return success && board != null;
+	}
 
-		if (success && board != null) {
-			GameScreen screen = new GameScreen(window, new Game(board));
-			window.setScreen(screen);
-		}
+	public final void setScreen(GameWindow window) {
+		GameScreen screen = new GameScreen(window, new Game(board));
+		window.setScreen(screen);
+	}
+
+	public final void done() {
+		dialog.dispose();
 	}
 }

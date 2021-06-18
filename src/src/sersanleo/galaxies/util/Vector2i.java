@@ -2,7 +2,7 @@ package src.sersanleo.galaxies.util;
 
 import java.util.Collection;
 
-public class Vector2i {
+public class Vector2i implements Comparable<Vector2i> {
 	public int x;
 	public int y;
 
@@ -53,5 +53,12 @@ public class Vector2i {
 	@Override
 	public String toString() {
 		return "(" + x + ", " + y + ")";
+	}
+
+	@Override
+	public int compareTo(Vector2i v) {
+		Integer p1 = x * y;
+		Integer p2 = v.x * v.y;
+		return p1.compareTo(p2);
 	}
 }

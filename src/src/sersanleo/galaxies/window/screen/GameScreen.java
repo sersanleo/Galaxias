@@ -30,6 +30,7 @@ import src.sersanleo.galaxies.util.ColorUtil;
 import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
+import src.sersanleo.galaxies.window.dialog.RankingDialog;
 
 public class GameScreen extends Screen implements ActionListener, SolutionFoundListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
@@ -250,7 +251,8 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 			saveButton.setEnabled(true);
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, "No se puede guardar la partida", "Error", JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace();
+			if (AppConfig.DEBUG)
+				e.printStackTrace();
 		}
 	}
 
@@ -344,9 +346,10 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 
 		boardView.removeMouseListener(boardViewListener);
 		boardView.removeMouseMotionListener(boardViewListener);
-
-		if (!game.solution.isCheat()) { // Resuelto de manera honesta
-
+		
+		if (!game.solution.isCheat()) {
+			RankingDialog rankingDialog = new RankingDialog(window);
+			rankingDialog.setVisible(true);
 		}
 	}
 

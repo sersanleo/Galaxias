@@ -5,8 +5,10 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 public class ExtFileOutputStream extends FileOutputStream {
+	public static final Charset CHARSET = Charset.forName("UTF-8");
 
 	public ExtFileOutputStream(String name) throws FileNotFoundException {
 		super(name);
@@ -43,5 +45,10 @@ public class ExtFileOutputStream extends FileOutputStream {
 
 	public final void writeBoolean(boolean b) throws IOException {
 		this.write(b == true ? 1 : 0);
+	}
+
+	public final void writeString(String s) throws IOException {
+		this.writeInt(s.length());
+		this.write(s.getBytes(CHARSET));
 	}
 }

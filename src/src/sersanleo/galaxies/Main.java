@@ -25,11 +25,12 @@ public final class Main {
 		// versión)
 		System.setProperty("sun.java2d.opengl", "true");
 
-		// Intenta establecer el Look & Feel del sistema
+		// Establece el Look & Feel del sistema
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (AppConfig.DEBUG)
+				e.printStackTrace();
 		}
 
 		GameWindow window = new GameWindow();
@@ -62,7 +63,7 @@ public final class Main {
 		while (true) {
 			BoardGenerator generator;
 			try {
-				generator = new BoardGenerator(9, 9, 1);
+				generator = new BoardGenerator(18, 18, 0f);
 				generator.generate();
 			} catch (BoardTooSmallException e) {
 				e.printStackTrace();

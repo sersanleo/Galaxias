@@ -37,9 +37,9 @@ import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
-import src.sersanleo.galaxies.game.exception.CanNotAddGalaxyException;
 import src.sersanleo.galaxies.util.Raetsel;
 import src.sersanleo.galaxies.window.dialog.GeneratorProgressDialog;
+import src.sersanleo.galaxies.window.dialog.InfoDialog;
 import src.sersanleo.galaxies.window.dialog.RankingDialog;
 import src.sersanleo.galaxies.window.screen.BoardCreatorScreen;
 import src.sersanleo.galaxies.window.screen.GameScreen;
@@ -53,8 +53,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 	private final static int MIN_BOARD_SIZE = 4;
 	private final static int MAX_BOARD_SIZE = 18;
-	private final static int DEFAULT_BOARD_WIDTH = 15;
-	private final static int DEFAULT_BOARD_HEIGHT = 15;
+	private final static int DEFAULT_BOARD_WIDTH = 12;
+	private final static int DEFAULT_BOARD_HEIGHT = 12;
 
 	private final static float[] SCALES = new float[] { 1f, 0.5f, 0.75f, 1.25f, 1.5f };
 
@@ -143,7 +143,6 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		// Ayuda
 		menuBar.add(helpMenu);
 
-		infoMenuItem.setEnabled(false);
 		infoMenuItem.addActionListener(this);
 		helpMenu.add(infoMenuItem);
 
@@ -226,8 +225,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private final static Map<String, Float> DIFFICULTY_CHOICES = new LinkedHashMap<String, Float>() {
 		{
 			put("Difícil", 1f);
-			put("Normal", .5f);
-			put("Fácil", 0f);
+			put("Normal", 0f);
 		}
 	};
 	@SuppressWarnings("serial")
@@ -279,28 +277,39 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		}
 	}
 
-	private final void loadGame() throws IOException, BoardTooSmallException, CanNotAddGalaxyException {
-		JFileChooser fileChooser = new JFileChooser(".");
-		fileChooser.setDialogTitle("Cargar partida");
-		FileNameExtensionFilter tsb = new FileNameExtensionFilter("Partida de galaxias (." + Board.FILE_EXT + ")",
-				Board.FILE_EXT);
-		fileChooser.addChoosableFileFilter(tsb);
-		fileChooser.setFileFilter(tsb);
+	private final void loadGame() {
+		try {
+			JFileChooser fileChooser = new JFileChooser(".");
+			fileChooser.setDialogTitle("Cargar partida");
+			FileNameExtensionFilter tsb = new FileNameExtensionFilter("Partida de galaxias (." + Board.FILE_EXT + ")",
+					Board.FILE_EXT);
+			fileChooser.addChoosableFileFilter(tsb);
+			fileChooser.setFileFilter(tsb);
 
-		int userSelection = fileChooser.showOpenDialog(this);
+			int userSelection = fileChooser.showOpenDialog(this);
 
-		if (userSelection == JFileChooser.APPROVE_OPTION) {
-			File file = fileChooser.getSelectedFile();
+			if (userSelection == JFileChooser.APPROVE_OPTION) {
+				File file = fileChooser.getSelectedFile();
 
-			GameScreen screen = new GameScreen(this, Game.createFromFile(file));
-			setScreen(screen);
+				GameScreen screen;
+				screen = new GameScreen(this, Game.createFromFile(file));
+
+				setScreen(screen);
+			}
+		} catch (Exception e) {
+			if (AppConfig.DEBUG)
+				e.printStackTrace();
 		}
 	}
 
 	private final void ranking() {
 		RankingDialog dialog = new RankingDialog(this);
 		dialog.setVisible(true);
-		dialog.dispose();
+	}
+
+	private final void info() {
+		InfoDialog dialog = new InfoDialog(this);
+		dialog.setVisible(true);
 	}
 
 	public final void setStatus(String text) {
@@ -322,13 +331,11 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 		else if (eventSource == generateBoardMenuItem)
 			generateNewBoard();
 		else if (eventSource == loadGameMenuItem)
-			try {
-				loadGame();
-			} catch (IOException | BoardTooSmallException | CanNotAddGalaxyException e) {
-				e.printStackTrace();
-			}
+			loadGame();
 		else if (eventSource == rankingMenuItem)
 			ranking();
+		else if (eventSource == infoMenuItem)
+			info();
 
 		if (AppConfig.DEBUG)
 			if (eventSource == raetselMenuItem)

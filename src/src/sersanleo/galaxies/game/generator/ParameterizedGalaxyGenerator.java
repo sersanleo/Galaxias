@@ -70,7 +70,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 
 	@Override
 	protected boolean isValid(int x, int y) {
-		return !createsHole(x, y) && makesDesiredSize(x, y);
+		return (MAKES_HOLE || !createsHole(x, y)) && makesDesiredSize(x, y);
 	}
 
 	private boolean sizeReached() {

@@ -20,6 +20,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 
+import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
@@ -299,7 +300,8 @@ public class BoardRenderer {
 			iis.flush();
 			iis.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			if (AppConfig.DEBUG)
+				e.printStackTrace();
 		}
 		jpgWriter.dispose();
 	}

@@ -12,6 +12,8 @@ import src.sersanleo.galaxies.util.Vector2f;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public abstract class GalaxyGenerator {
+	protected final boolean MAKES_HOLE = true;
+	
 	private final BoardGenerator generator;
 	private final Vector2f galaxy;
 

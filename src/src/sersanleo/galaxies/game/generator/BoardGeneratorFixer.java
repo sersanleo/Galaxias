@@ -1,10 +1,13 @@
 package src.sersanleo.galaxies.game.generator;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import src.sersanleo.galaxies.game.Board;
@@ -15,22 +18,22 @@ public class BoardGeneratorFixer {
 	protected final BoardGenerator generator;
 
 	private final Board board;
-	protected final GeneratorCell[][] cells;
+	protected final Set<Galaxy>[][] cells;
 
 	private Map<Galaxy, Set<Galaxy>> graph = new HashMap<Galaxy, Set<Galaxy>>();
 	private Map<Galaxy, Integer> areas = new HashMap<Galaxy, Integer>();
-	private Map<Galaxy, Integer> pureAreas = new HashMap<Galaxy, Integer>();
 
 	private Set<Galaxy> removed = new HashSet<Galaxy>();
 
+	@SuppressWarnings("unchecked")
 	public BoardGeneratorFixer(BoardGenerator generator, Solver solver) {
 		this.generator = generator;
 
 		board = generator.board;
-		cells = new GeneratorCell[board.width][board.height];
+		cells = new Set[board.width][board.height];
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++)
-				cells[x][y] = new GeneratorCell(this, solver.cell(x, y));
+				cells[x][y] = new HashSet<Galaxy>(solver.cell(x, y).getGalaxies());
 	}
 
 	private final void initialize() {
@@ -63,32 +66,14 @@ public class BoardGeneratorFixer {
 		// que tiene que estar la galaxia)
 		for (int x = 0; x < board.width; x++)
 			for (int y = 0; y < board.height; y++) {
-				Set<Galaxy> galaxies = cells[x][y];
-
-				if (galaxies.size() == 1) {
-					Galaxy galaxy = cells[x][y].iterator().next();
-					if (graph.containsKey(galaxy)) {
-						pureAreas.put(galaxy, pureAreas.getOrDefault(galaxy, 0) + 1);
-						areas.put(galaxy, areas.getOrDefault(galaxy, 0) + 1);
-					}
-				} else
-					for (Galaxy galaxy : galaxies)
-						if (graph.containsKey(galaxy))
-							areas.put(galaxy, areas.getOrDefault(galaxy, 0) + 1);
+				Galaxy galaxy = generator.rows[x][y];
+				areas.put(galaxy, areas.getOrDefault(galaxy, 0) + 1);
 			}
 	}
 
 	private final void remove(Galaxy galaxy) {
-		System.out.println("Borrando " + galaxy);
+		generator.remove(galaxy);
 		removed.add(galaxy);
-
-		for (int x = 0; x < board.width; x++)
-			for (int y = 0; y < board.height; y++) {
-				GeneratorCell cell = cells[x][y];
-				cell.remove(galaxy);
-			}
-
-		generator.board.remove(galaxy);
 	}
 
 	private final void iterate() {
@@ -96,9 +81,17 @@ public class BoardGeneratorFixer {
 		Set<Set<Galaxy>> cycles = new CycleFinder().find();
 		for (Set<Galaxy> cycle : cycles)
 			if (Collections.disjoint(cycle, removed)) { // Aun no se ha borrado ninguna galaxia del ciclo
-				Galaxy galaxy = cycle.stream().filter(x -> pureAreas.get(x) > 1)
-						.sorted(Comparator.comparing(x -> -areas.get(x))).findFirst().get();
-				remove(galaxy);
+				Optional<Galaxy> galaxy = cycle.stream().filter(x -> areas.get(x) > 1)
+						.sorted(Comparator.comparing(x -> -areas.get(x))).findFirst();
+
+				if (galaxy.isPresent()) {
+					remove(galaxy.get());
+				} else {
+					Iterator<Galaxy> it = cycle.iterator();
+					int n = 2;
+					while (n-- > 0)
+						remove(it.next());
+				}
 			}
 
 	}
@@ -121,18 +114,53 @@ public class BoardGeneratorFixer {
 
 		private Galaxy goal;
 
-		private final Set<Galaxy> find(Galaxy step, Set<Galaxy> path, Set<Galaxy> visited) {
-			visited.add(step);
-			Set<Galaxy> visitedNow = graph.get(step);
+		private final void addCycle(Set<Galaxy> path) {
+			for (Set<Galaxy> cycle : cycles)
+				if (!Collections.disjoint(cycle, path)) {
+					cycle.addAll(path);
+					return;
+				}
 
-			path.addAll();
+			cycles.add(path);
+		}
 
-			visited.addAll(visitedNow);
-			return null;
+		private final void find(AbstractMap.Entry<Galaxy, Galaxy> step, Set<Galaxy> path,
+				Map<Galaxy, Set<Galaxy>> visited) {
+			if (visited.containsKey(step.getKey()) && visited.get(step.getKey()).contains(step.getValue()))
+				return; // Ya visitado; no hacemos nada
+
+			if (step.getValue() == goal)
+				addCycle(path);
+			else {
+				path.add(step.getValue());
+
+				Set<Galaxy> visitedSet;
+				if (visited.containsKey(step.getKey()))
+					visitedSet = visited.get(step.getKey());
+				else {
+					visitedSet = new HashSet<Galaxy>();
+					visited.put(step.getKey(), visitedSet);
+				}
+
+				visitedSet.add(step.getValue());
+
+				for (Galaxy neighbor : graph.get(step.getValue()))
+					find(new AbstractMap.SimpleEntry<Galaxy, Galaxy>(step.getValue(), neighbor), path,
+							new HashMap<Galaxy, Set<Galaxy>>(visited));
+			}
+		}
+
+		private final void find(Galaxy step, Set<Galaxy> path, Map<Galaxy, Set<Galaxy>> visited) {
+			path.add(step);
+
+			for (Galaxy neighbor : graph.get(step))
+				find(new AbstractMap.SimpleEntry<Galaxy, Galaxy>(step, neighbor), path,
+						new HashMap<Galaxy, Set<Galaxy>>(visited));
 		}
 
 		private final void find(Galaxy start) {
-			find(start, new HashSet<Galaxy>(), new HashSet<Galaxy>());
+			goal = start;
+			find(start, new HashSet<Galaxy>(), new HashMap<Galaxy, Set<Galaxy>>());
 		}
 
 		protected final Set<Set<Galaxy>> find() {

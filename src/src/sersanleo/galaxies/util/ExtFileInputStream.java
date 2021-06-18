@@ -39,4 +39,10 @@ public class ExtFileInputStream extends FileInputStream {
 	public final boolean readBoolean() throws IOException {
 		return read() != 0;
 	}
+
+	public final String readString() throws IOException {
+		byte[] bytes = new byte[readInt()];
+		read(bytes);
+		return new String(bytes, ExtFileOutputStream.CHARSET);
+	}
 }

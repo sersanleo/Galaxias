@@ -14,7 +14,7 @@ import src.sersanleo.galaxies.util.RandomUtil;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class BoardGenerator {
-	private final static int MAX_FIXES = 2;
+	private final static int MAX_FIXES = 1;
 
 	protected final Board board;
 	private final float difficulty;
@@ -197,7 +197,7 @@ public class BoardGenerator {
 				// rnd.seed + " final.jpg"));
 				break;
 			} else {
-				if (++fixedCount >= MAX_FIXES) {
+				if (++fixedCount > MAX_FIXES) {
 					reset();
 					fixedCount = 0;
 

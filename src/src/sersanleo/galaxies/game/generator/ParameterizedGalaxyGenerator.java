@@ -23,7 +23,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 		this.desiredArea = desiredArea;
 
 		this.b = 2.7f - difficulty * 1.7f; // Centro de la campana
-		this.c = 0.7f - difficulty * 0.3f; // Apertura de la campana
+		this.c = 1f - difficulty * 0.6f; // Apertura de la campana
 	}
 
 	public ParameterizedGalaxyGenerator(BoardGenerator generator, Vector2f galaxy, int desiredArea, float difficulty) {
@@ -68,6 +68,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 		return newWidth <= maxWidth && newHeight <= maxHeight;
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	protected boolean isValid(int x, int y) {
 		return (MAKES_HOLE || !createsHole(x, y)) && makesDesiredSize(x, y);

@@ -7,6 +7,7 @@ public class FloodFillGalaxyGenerator extends GalaxyGenerator {
 		super(generator, galaxy);
 	}
 
+	@SuppressWarnings("unused")
 	@Override
 	protected boolean isValid(int x, int y) {
 		return MAKES_HOLE || !createsHole(x, y);

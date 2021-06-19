@@ -37,7 +37,7 @@ public class GeneratorProgressDialog extends JDialog implements WindowListener {
 		add(mainContent);
 
 		JLabel label = new JLabel(
-				"<html><div style='text-align: center'>Generando tablero...<br>Si tarda demasiado, pruebe a cancelar e inténtalo de nuevo.</div></html>",
+				"<html><div style='text-align: center'>Generando tablero...<br>Si tarda demasiado, pruebe a cancelar e inténtelo de nuevo.</div></html>",
 				SwingConstants.CENTER);
 		label.setAlignmentX(Component.CENTER_ALIGNMENT);
 		mainContent.add(label);

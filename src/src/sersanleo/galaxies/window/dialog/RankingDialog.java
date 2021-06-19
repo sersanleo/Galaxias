@@ -29,7 +29,7 @@ public class RankingDialog extends JDialog {
 	private final JScrollPane scrollPane;
 
 	public RankingDialog(GameWindow window) {
-		super(window, "Cuadro de honor", true);
+		super(window, "Cuadro de honor", false);
 
 		Ranking ranking = Ranking.read();
 		table = new JTable(ranking);
@@ -102,6 +102,9 @@ public class RankingDialog extends JDialog {
 		}
 
 		public void addRow(Game game) {
+			if(editable)
+				System.err.println("No se van a poder editar todas las filas insertadas...");
+			
 			rows.add(0,
 					new Object[] { System.getProperty("user.name", "Usuario"),
 							new Vector2i(game.board.width, game.board.height), game.solution.getMoves(),

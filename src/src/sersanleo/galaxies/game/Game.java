@@ -56,8 +56,8 @@ public class Game implements SolutionFoundListener {
 	public final void nextStep() {
 		Movement nextStep = solution.getNextStep(board.solution);
 		if (nextStep != null) {
-			nextStep.apply(this, false, false);
 			elapsedSeconds += NEXT_STEP_PENALTY;
+			nextStep.apply(this, false, false);
 		}
 	}
 

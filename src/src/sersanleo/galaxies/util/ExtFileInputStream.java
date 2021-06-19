@@ -32,6 +32,10 @@ public class ExtFileInputStream extends FileInputStream {
 		return ByteBuffer.wrap(bytes).getInt();
 	}
 
+	public final Vector2i readVector2i() throws IOException {
+		return new Vector2i(readInt(), readInt());
+	}
+
 	public final float readFloat() throws IOException {
 		return Float.intBitsToFloat(readInt());
 	}

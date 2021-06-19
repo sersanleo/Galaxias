@@ -5,7 +5,7 @@ import java.awt.Color;
 import src.sersanleo.galaxies.game.Game;
 
 public class GameRenderer extends BoardRenderer {
-	private final static Color WIN_COLOR = new Color(175, 207, 175);
+	public final static Color WIN_COLOR = new Color(175, 207, 175);
 
 	private final Game game;
 

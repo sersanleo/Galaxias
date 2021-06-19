@@ -62,6 +62,7 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 	private final JLabel movesLabel = new JLabel();
 
 	private final Timer timer;
+	private boolean cheated = false;
 
 	public GameScreen(GameWindow window, Game game) {
 		super(window);
@@ -297,6 +298,7 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 		if (JOptionPane.showConfirmDialog(this,
 				"Si resuelves el tablero la partida acabará sin que puedas conservar tu puntuación. ¿De verdad quieres resolverlo?",
 				"¿Resolver?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+			cheated = true;
 			game.solution.set(game.board.solution);
 			repaint();
 		}
@@ -347,8 +349,10 @@ public class GameScreen extends Screen implements ActionListener, SolutionFoundL
 		boardView.removeMouseListener(boardViewListener);
 		boardView.removeMouseMotionListener(boardViewListener);
 		
-		if (!game.solution.isCheat()) {
+		if (!cheated) {
+			repaint();
 			RankingDialog rankingDialog = new RankingDialog(window);
+			rankingDialog.addRow(game);
 			rankingDialog.setVisible(true);
 		}
 	}

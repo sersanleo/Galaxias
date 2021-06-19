@@ -39,6 +39,11 @@ public class ExtFileOutputStream extends FileOutputStream {
 		this.write(new byte[] { (byte) (i >>> 24), (byte) (i >>> 16), (byte) (i >>> 8), (byte) i });
 	}
 
+	public final void writeVector2i(Vector2i v) throws IOException {
+		this.writeInt(v.x);
+		this.writeInt(v.y);
+	}
+
 	public final void writeFloat(float f) throws IOException {
 		this.writeInt(Float.floatToIntBits(f));
 	}

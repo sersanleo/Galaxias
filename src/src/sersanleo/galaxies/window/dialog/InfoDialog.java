@@ -73,7 +73,7 @@ public class InfoDialog extends JDialog {
 		return htmlTextPane(
 				"<b>Galaxias</b> es un pasatiempo lógico de origen japonés. Su nombre original, <i>Tentai Show</i>, está formado a partir de la combinación de las palabras “punto”, “simetría” y “astronómica” en su lengua de origen (relacionadas con la estrategia del juego). Fue creado por la compañía editora nipona Nikoli, especializada en juegos, acertijos y rompecabezas lógicos. Nikoli se ha hecho mundialmente conocida gracias a la popularidad de su Sudoku.<br><br> Cada tablero del juego consiste en una rejilla cuadrada o rectangular con círculos (también llamados galaxias) situados sobre la misma. El objetivo es dividir dicha rejilla en áreas, de forma que cada subdivisión contenga una única galaxia y tenga una simetría rotacional de 180º.<br> <center><img src='"
 						+ imgSrc("solved_puzzle.jpg")
-						+ "' /></center><br> Página oficial de Nikoli:<br> <a href='https://www.nikoli.co.jp/en/puzzles/astronomical_show.html'>https://www.nikoli.co.jp/en/puzzles/astronomical_show.html</a>");
+						+ "' /></center><br> Página oficial de Nikoli: <a href='https://www.nikoli.co.jp/en/puzzles/astronomical_show.html'>https://www.nikoli.co.jp/en/puzzles/astronomical_show.html</a><br><br> Los iconos usados han sido obtenidos de <a href='https://fontawesome.com/'>Font Awesome</a>.");
 	}
 
 	private final Component tutorialPanel() {

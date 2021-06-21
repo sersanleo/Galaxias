@@ -26,7 +26,7 @@ import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
 public class BoardRenderer {
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = AppConfig.DEBUG && false;
 
 	private static final float SCALE = 0.8f;
 	private static final float CELL_SIZE = 45 * SCALE;

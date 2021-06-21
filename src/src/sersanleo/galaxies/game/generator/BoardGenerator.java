@@ -159,20 +159,12 @@ public class BoardGenerator {
 				break;
 		}
 
-		// Eliminamos la galaxia que va a ser expandida
-		galaxies.remove(galaxy);
-
 		int maxArea = Math.min(sizeCalculator.getArea(), maxGalaxyArea);
 		int minArea = (int) Math.min(maxArea, minGalaxyArea);
 
 		int skeletonArea = sizeCalculator.getSkeletonArea();
 		int randomArea = rnd.random(minArea, maxArea);
 		int area = Math.round(difficulty * skeletonArea + (1 - difficulty) * randomArea);
-		/*
-		 * if (difficulty > 0.999f) area = skeletonArea; else area = randomArea;
-		 */
-		// System.out.println("skeleton=" + skeletonArea + " random=" + randomArea + "
-		// area=" + area);
 		return new ParameterizedGalaxyGenerator(this, galaxy, area, difficulty);
 	}
 

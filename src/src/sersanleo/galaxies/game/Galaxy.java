@@ -8,13 +8,11 @@ import src.sersanleo.galaxies.util.Vector2f;
 import src.sersanleo.galaxies.util.Vector2i;
 
 public class Galaxy extends GalaxyVector {
-	private static int i = 1;
 	private static final float SMALL_RADIUS = 0.5001f;
 	private static final float BIG_RADIUS = 1.0001f;
 
 	public final BoundingBoxf smallBB;
 	public final BoundingBoxf bigBB;
-	public final int a = i++;
 
 	public Galaxy(float x, float y) {
 		super(x, y);

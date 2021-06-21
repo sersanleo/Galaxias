@@ -270,9 +270,7 @@ public class BoardRenderer {
 		FileNameExtensionFilter tsb = new FileNameExtensionFilter("JPG (.jpg)", "jpg");
 		fileChooser.addChoosableFileFilter(tsb);
 		fileChooser.setFileFilter(tsb);
-		File defaultFile = new File("F:\\Sergio\\Desktop\\TABLEROS\\" + System.currentTimeMillis() + ".jpg");
-		if (!defaultFile.getParentFile().exists())
-			defaultFile = new File(defaultFile.getName());
+		File defaultFile = new File(System.currentTimeMillis() + ".jpg");
 		fileChooser.setSelectedFile(defaultFile);
 
 		int userSelection = fileChooser.showSaveDialog(component);

@@ -4,7 +4,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class AppConfig {
-	public final static boolean DEBUG = true;
+	public final static boolean DEBUG = false;
 
 	private float boardScale = 1;
 

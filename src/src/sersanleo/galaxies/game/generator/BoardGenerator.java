@@ -192,9 +192,6 @@ public class BoardGenerator {
 
 			if (solver.getSolutions() == 1) {
 				board.solution = solver.getSolution();
-
-				// new SolverRenderer(solver).save(new File("F:\\Sergio\\Desktop\\TABLEROS\\" +
-				// rnd.seed + " final.jpg"));
 				break;
 			} else {
 				if (++fixedCount > MAX_FIXES) {
@@ -205,11 +202,7 @@ public class BoardGenerator {
 						System.out.println("Creando otro tablero...");
 				} else {
 					if (AppConfig.DEBUG)
-						System.out.println("Fixing...");
-
-					// new SolverRenderer(solver)
-					// .save(new File("F:\\Sergio\\Desktop\\TABLEROS\\" + rnd.seed + " " +
-					// fixedCount + ".jpg"));
+						System.out.println("Arreglando...");
 
 					BoardGeneratorFixer fixer = new BoardGeneratorFixer(this, solver);
 					fixer.fix();

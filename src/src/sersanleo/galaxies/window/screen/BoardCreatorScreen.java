@@ -51,13 +51,13 @@ public class BoardCreatorScreen extends Screen implements ActionListener, AppCon
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 		add(buttonPanel);
 
-		playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		playButton.setAlignmentY(Component.CENTER_ALIGNMENT);
 		playButton.addActionListener(this);
 		buttonPanel.add(playButton);
 
 		if (AppConfig.DEBUG) {
 			solveButton.setBackground(Color.MAGENTA);
-			solveButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+			solveButton.setAlignmentY(Component.CENTER_ALIGNMENT);
 			solveButton.addActionListener(this);
 			buttonPanel.add(solveButton);
 		}

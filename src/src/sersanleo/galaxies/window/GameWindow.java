@@ -273,6 +273,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 				setScreen(screen);
 			} catch (Exception e) {
 				setStatus("Error al leer el tablero de Raetsel #" + raetselSpinner.getValue() + "; pruebe otra ID.");
+				if (AppConfig.DEBUG)
+					e.printStackTrace();
 			}
 		}
 	}

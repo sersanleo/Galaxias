@@ -1,12 +1,7 @@
 package src.sersanleo.galaxies.util;
 
 import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Desktop;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
-import java.net.URI;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -30,10 +25,24 @@ public final class SwingUtil {
 		return getIconResource("/icons/" + name);
 	}
 
+	public static final ImageIcon image(String name) {
+		return getIconResource("/images/" + name);
+	}
+
+	public static final String imgSrc(String name) {
+		return SwingUtil.class.getResource("/images/" + name).toString();
+	}
+
 	public static final JLabel imageLabel(String name) {
-		JLabel label = new JLabel(getIconResource("/images/" + name));
-		label.setAlignmentX(Component.CENTER_ALIGNMENT);
-		return label;
+		try {
+			JLabel label = new JLabel(image(name));
+			label.setAlignmentX(Component.CENTER_ALIGNMENT);
+			return label;
+		} catch (Exception e) {
+			if (AppConfig.DEBUG)
+				e.printStackTrace();
+			return new JLabel();
+		}
 	}
 
 	public static final JButton iconButton(String iconName, String tooltip) {
@@ -42,25 +51,5 @@ public final class SwingUtil {
 		button.setDisabledIcon(new HighQualityIcon(button.getDisabledIcon()));
 		button.setToolTipText(tooltip);
 		return button;
-	}
-
-	public static JLabel link(String text, String link) {
-		JLabel label = new JLabel("<html><a href='" + link + "'>" + text + "</a></html");
-		label.setAlignmentX(Component.CENTER_ALIGNMENT);
-		label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		label.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				try {
-					Desktop.getDesktop().browse(new URI(link));
-				} catch (Exception ex) {
-				}
-			}
-		});
-		return label;
-	}
-
-	public static JLabel link(String link) {
-		return link(link, link);
 	}
 }

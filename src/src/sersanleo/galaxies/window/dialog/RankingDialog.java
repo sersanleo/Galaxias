@@ -33,9 +33,13 @@ public class RankingDialog extends JDialog {
 
 		Ranking ranking = Ranking.read();
 		table = new JTable(ranking);
-		table.setDefaultRenderer(Object.class, ranking.new RankingRenderer());
 		table.setAutoCreateRowSorter(true);
 		table.getRowSorter().toggleSortOrder(3);
+		Ranking.RankingRenderer renderer = ranking.new RankingRenderer();
+		table.setDefaultRenderer(String.class, renderer);
+		table.setDefaultRenderer(Vector2i.class, renderer);
+		table.setDefaultRenderer(Integer.class, renderer);
+		table.setDefaultRenderer(Long.class, renderer);
 
 		scrollPane = new JScrollPane(table);
 		add(scrollPane);
@@ -70,6 +74,20 @@ public class RankingDialog extends JDialog {
 			this(file, new ArrayList<Object[]>());
 		}
 
+		public Class<?> getColumnClass(int col) {
+			switch (col) {
+			case 0:
+			default:
+				return String.class;
+			case 1:
+				return Vector2i.class;
+			case 2:
+				return Integer.class;
+			case 3:
+				return Long.class;
+			}
+		}
+
 		public String getColumnName(int col) {
 			return COLUMN_NAMES[col].toString();
 		}
@@ -102,9 +120,9 @@ public class RankingDialog extends JDialog {
 		}
 
 		public void addRow(Game game) {
-			if(editable)
+			if (editable)
 				System.err.println("No se van a poder editar todas las filas insertadas...");
-			
+
 			rows.add(0,
 					new Object[] { System.getProperty("user.name", "Usuario"),
 							new Vector2i(game.board.width, game.board.height), game.solution.getMoves(),
@@ -171,9 +189,9 @@ public class RankingDialog extends JDialog {
 			public Component getTableCellRendererComponent(JTable table, Object obj, boolean isSelected,
 					boolean hasFocus, int row, int col) {
 				Component cell = super.getTableCellRendererComponent(table, obj, isSelected, hasFocus, row, col);
-				
+
 				row = table.convertRowIndexToModel(row);
-				
+
 				cell.setForeground(Color.BLACK);
 				if (isCellEditable(row, 0)) {
 					cell.setBackground(GameRenderer.WIN_COLOR);

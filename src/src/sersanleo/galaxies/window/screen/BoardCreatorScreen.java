@@ -18,10 +18,10 @@ import src.sersanleo.galaxies.AppConfig.AppConfigChangeListener;
 import src.sersanleo.galaxies.AppConfig.ConfigParameter;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Game;
-import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.window.GameWindow;
 import src.sersanleo.galaxies.window.component.BoardView;
 import src.sersanleo.galaxies.window.component.listener.BoardMouseListener;
+import src.sersanleo.galaxies.window.dialog.CreatorCheckProgressDialog;
 
 public class BoardCreatorScreen extends Screen implements ActionListener, AppConfigChangeListener {
 	private static final long serialVersionUID = 1L;
@@ -67,27 +67,17 @@ public class BoardCreatorScreen extends Screen implements ActionListener, AppCon
 
 	private final void play() {
 		if (board.getGalaxies().size() <= 1)
-			JOptionPane.showMessageDialog(this, "El tablero tiene que tener al menos 2 galaxias.", "Error",
+			JOptionPane.showMessageDialog(window, "El tablero tiene que tener al menos 2 galaxias.", "Error",
 					JOptionPane.ERROR_MESSAGE);
 		else {
 			if (board.solution == null) {
-				Solver solver = new Solver(board, 2);
-				solver.solve();
-				if (solver.getSolutions() == 1)
-					board.solution = solver.getSolution();
-				else if (solver.getSolutions() == 0) {
-					JOptionPane.showMessageDialog(this, "El tablero no tiene una solución válida.", "Error",
-							JOptionPane.ERROR_MESSAGE);
-					return;
-				} else if (solver.getSolutions() > 1) {
-					JOptionPane.showMessageDialog(this, "El tablero tiene más de una solución válida.", "Error",
-							JOptionPane.ERROR_MESSAGE);
-					return;
-				}
+				CreatorCheckProgressDialog dialog = new CreatorCheckProgressDialog(window, board);
+				dialog.setVisible(true);
+			} else {
+				Game game = new Game(board);
+				GameScreen newContent = new GameScreen(window, game);
+				window.setScreen(newContent, true);
 			}
-			Game game = new Game(board);
-			GameScreen newContent = new GameScreen(window, game);
-			window.setScreen(newContent, true);
 		}
 	}
 

@@ -37,7 +37,7 @@ public class GeneratorThread extends Thread {
 	}
 
 	public final boolean success() {
-		return success && board != null;
+		return success;
 	}
 
 	public final void setScreen(GameWindow window) {

@@ -1,5 +1,6 @@
 package src.sersanleo.galaxies.game.generator;
 
+import java.awt.Color;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
+import src.sersanleo.galaxies.game.rendering.SolverRenderer;
 import src.sersanleo.galaxies.game.solver.Solver;
 
 public class BoardGeneratorFixer {
@@ -82,7 +84,7 @@ public class BoardGeneratorFixer {
 		for (Set<Galaxy> cycle : cycles)
 			if (Collections.disjoint(cycle, removed)) { // Aun no se ha borrado ninguna galaxia del ciclo
 				Optional<Galaxy> galaxy = cycle.stream().filter(x -> areas.get(x) > 1)
-						.sorted(Comparator.comparing(x -> -areas.get(x))).findFirst();
+						.sorted(Comparator.comparing(x -> areas.get(x))).findFirst();
 
 				if (galaxy.isPresent()) {
 					remove(galaxy.get());
@@ -101,6 +103,21 @@ public class BoardGeneratorFixer {
 
 		// No se deben generar las galaxias recién eliminadas
 		generator.galaxies.removeAll(removed);
+	}
+
+	private final String toHex(Color color) {
+		return String.format("#%06X", (0xFFFFFF & color.getRGB()));
+	}
+
+	public final void printGraph() {
+		SolverRenderer renderer = new SolverRenderer(new Solver(board, 2));
+		for (Galaxy from : graph.keySet()) {
+			for (Galaxy to : graph.get(from))
+				System.out.println(from.a + " -> " + to.a + ";");
+			Color color = renderer.getColorByGalaxy(from);
+			System.out.println(from.a + " [label=\"\", shape=circle, color=\"" + toHex(color) + "\", fillcolor=\""
+					+ toHex(color) + "\", style=filled];");
+		}
 	}
 
 	public final void fix() {

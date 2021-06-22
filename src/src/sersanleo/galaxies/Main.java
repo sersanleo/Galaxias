@@ -63,7 +63,7 @@ public final class Main {
 		while (true) {
 			BoardGenerator generator;
 			try {
-				generator = new BoardGenerator(18, 18, 0f);
+				generator = new BoardGenerator(10, 10, 0f);
 				generator.generate();
 			} catch (BoardTooSmallException e) {
 				e.printStackTrace();

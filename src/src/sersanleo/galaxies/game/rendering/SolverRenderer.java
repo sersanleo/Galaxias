@@ -42,8 +42,8 @@ public class SolverRenderer extends BoardRenderer {
 		this(solver, 1);
 	}
 
-	private final Color getColorByGalaxy(Galaxy galaxy) {
-		return Color.decode(indexcolors[solver.board.getGalaxyId(galaxy) % indexcolors.length]);
+	public final Color getColorByGalaxy(Galaxy galaxy) {
+		return Color.decode(indexcolors[galaxy.a % indexcolors.length]);
 	}
 
 	@Override

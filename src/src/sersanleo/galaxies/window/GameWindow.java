@@ -53,8 +53,8 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 
 	private final static int MIN_BOARD_SIZE = 4;
 	private final static int MAX_BOARD_SIZE = 18;
-	private final static int DEFAULT_BOARD_WIDTH = 12;
-	private final static int DEFAULT_BOARD_HEIGHT = 12;
+	private final static int DEFAULT_BOARD_WIDTH = 10;
+	private final static int DEFAULT_BOARD_HEIGHT = 10;
 
 	private final static float[] SCALES = new float[] { 1f, 0.5f, 0.75f, 1.25f, 1.5f };
 

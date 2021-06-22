@@ -8,6 +8,7 @@ import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.game.Board;
 import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.game.GalaxyVector;
+import src.sersanleo.galaxies.game.Solution;
 import src.sersanleo.galaxies.game.exception.BoardTooSmallException;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.util.RandomUtil;
@@ -23,6 +24,7 @@ public class BoardGenerator {
 	private final int maxGalaxyArea;
 	private final int minGalaxyArea;
 
+	public static Galaxy[][] ROWS;
 	protected Galaxy[][] rows;
 	private int emptyRows;
 	protected List<GalaxyVector> galaxies;
@@ -164,6 +166,7 @@ public class BoardGenerator {
 
 		int maxArea = Math.min(sizeCalculator.getArea(), maxGalaxyArea);
 		int minArea = (int) Math.min(maxArea, minGalaxyArea);
+		minArea = Math.round(0.75f * minArea + 0.25f * maxArea);
 
 		int skeletonArea = sizeCalculator.getSkeletonArea();
 		int randomArea = rnd.random(minArea, maxArea);
@@ -176,9 +179,25 @@ public class BoardGenerator {
 		return new ParameterizedGalaxyGenerator(this, galaxy, area, difficulty);
 	}
 
+	private final Solution getSolution() {
+		Galaxy[][] solution = rows;
+		boolean[][] horizontalEdges = new boolean[board.width][board.height - 1];
+		for (int x = 0; x < board.width; x++)
+			for (int y = 0; y < board.height - 1; y++)
+				if (solution[x][y] != solution[x][y + 1])
+					horizontalEdges[x][y] = true;
+		boolean[][] verticalEdges = new boolean[board.width - 1][board.height];
+		for (int x = 0; x < board.width - 1; x++)
+			for (int y = 0; y < board.height; y++)
+				if (solution[x][y] != solution[x + 1][y])
+					verticalEdges[x][y] = true;
+		return new Solution(board, horizontalEdges, verticalEdges);
+	}
+
 	private final void pass() {
 		reset();
 
+		int i = 0;
 		int fixedCount = 0;
 		while (true) {
 			while (emptyRows > 0) {
@@ -187,6 +206,7 @@ public class BoardGenerator {
 				galaxyGenerator.add();
 			}
 
+			ROWS = rows;
 			Solver solver = new Solver(board, 2);
 			solver.solve(rows);
 

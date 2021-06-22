@@ -16,6 +16,7 @@ import src.sersanleo.galaxies.AppConfig;
 import src.sersanleo.galaxies.AppConfig.AppConfigChangeListener;
 import src.sersanleo.galaxies.AppConfig.ConfigParameter;
 import src.sersanleo.galaxies.game.Board;
+import src.sersanleo.galaxies.game.generator.BoardGenerator;
 import src.sersanleo.galaxies.game.rendering.SolverRenderer;
 import src.sersanleo.galaxies.game.solver.Solver;
 import src.sersanleo.galaxies.window.GameWindow;
@@ -37,7 +38,7 @@ public class SolverScreen extends Screen implements AppConfigChangeListener, Act
 		super(window);
 
 		solver = new Solver(board, 2);
-		solver.solve();
+		solver.solve(BoardGenerator.ROWS);
 
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 

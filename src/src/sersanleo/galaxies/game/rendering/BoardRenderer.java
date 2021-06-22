@@ -26,6 +26,7 @@ import src.sersanleo.galaxies.game.Galaxy;
 import src.sersanleo.galaxies.window.component.listener.GameMouseListener;
 
 public class BoardRenderer {
+	@SuppressWarnings("unused")
 	private static final boolean DEBUG = AppConfig.DEBUG && false;
 
 	private static final float SCALE = 0.8f;

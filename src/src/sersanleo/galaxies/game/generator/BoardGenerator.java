@@ -161,7 +161,7 @@ public class BoardGenerator {
 
 		int maxArea = Math.min(sizeCalculator.getArea(), maxGalaxyArea);
 		int minArea = (int) Math.min(maxArea, minGalaxyArea);
-		minArea = Math.round(0.3f * minArea + 0.7f * maxArea);
+		minArea = Math.round(0.9f * minArea + 0.1f * maxArea);
 
 		int skeletonArea = sizeCalculator.getSkeletonArea();
 		int randomArea = rnd.random(minArea, maxArea);

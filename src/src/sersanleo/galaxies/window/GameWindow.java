@@ -51,7 +51,7 @@ public class GameWindow extends JFrame implements ActionListener, WindowListener
 	private static final int MIN_WIDTH = 400;
 	private static final int MIN_HEIGHT = 400;
 
-	private final static int MIN_BOARD_SIZE = 4;
+	private final static int MIN_BOARD_SIZE = 7;
 	private final static int MAX_BOARD_SIZE = 18;
 	private final static int DEFAULT_BOARD_WIDTH = 12;
 	private final static int DEFAULT_BOARD_HEIGHT = 12;

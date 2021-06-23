@@ -23,7 +23,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 		this.desiredArea = desiredArea;
 
 		this.b = 2.7f - difficulty * 1.7f; // Centro de la campana
-		this.c = 1f - difficulty * 0.6f; // Apertura de la campana
+		this.c = 1.2f - difficulty * 0.8f; // Apertura de la campana
 	}
 
 	public ParameterizedGalaxyGenerator(BoardGenerator generator, Vector2f galaxy, int desiredArea, float difficulty) {

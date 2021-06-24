@@ -22,7 +22,7 @@ public class ParameterizedGalaxyGenerator extends GalaxyGenerator {
 		this.maxHeight = maxHeight;
 		this.desiredArea = desiredArea;
 
-		this.b = 2.7f - difficulty * 1.7f; // Centro de la campana
+		this.b = 2f - difficulty; // Centro de la campana
 		this.c = 1.2f - difficulty * 0.8f; // Apertura de la campana
 	}
 
